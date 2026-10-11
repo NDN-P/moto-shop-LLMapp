@@ -108,3 +108,13 @@ The course hand-in additionally requires a public GitHub repository URL, a 4–8
 Sessions are held in one server process and disappear after restart. This is a single-instance, local application. Public hosting requires appropriate HTTPS, request limits, durable session handling, and deployment configuration. Keep private databases, photos, contacts, `.env`, and local generated artifacts out of a public submission.
 
 Prices are in THB. Initial balances are not sales history. The fictional catalog is small, and missing products or compatibility claims should lead to clarification rather than invented advice. The assistant has a finite process timeout; slow or unavailable proxy calls produce an error or a safe fallback.
+
+## Prepared hand-in files
+
+See [SUBMISSION.md](SUBMISSION.md) for the three course deliverables and their status. The six-page report is in `output/pdf/`; the recording script, proposal, measured verification results and defense notes are in `docs/`. Optional English narration is `output/demo/narration-guide.mp3` (4:15), a guide rather than a recorded demonstration.
+
+To rebuild the PDF, install the optional `requirements-report.txt` dependencies and run `python scripts/build_report.py`. These document dependencies are not needed to run the app.
+
+All 100 local application tests passed, and a clean installation/build/test/evaluation run passed in GitHub CI. The live sample-only smoke run produced four completed answers and two bounded fallbacks; retained observations are discussed in `docs/verification.md`. Browser appearance was not visually verified because a saved access rule blocked it.
+
+The owner chose to keep the repository private and record Q3 personally. The course's public-repository requirement and video URL remain pending. No course form has been submitted.
