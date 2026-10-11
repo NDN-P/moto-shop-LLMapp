@@ -1,6 +1,6 @@
 # MotoShop AI
 
-A local motorcycle-parts manager with a read-only assistant over an **invented demonstration catalog**. The shop screens use a local SQLite database. The assistant uses `assistant/data/catalog.json`, which contains 27 fictional products; it does not automatically send private inventory rows, supplier contacts, or uploaded photos to the model. Questions you type are sent to the class proxy.
+A local motorcycle-parts manager with a read-only assistant. The shop screens use a local SQLite database. The shared configuration defaults to an **invented demonstration catalog** in `assistant/data/catalog.json`, containing 27 fictional products. An optional shop mode reads the configured inventory database and sends selected product evidence to the class proxy. Questions you type are sent to the proxy in either mode.
 
 The assistant uses Python's `OpenAI` client, the class proxy, and `gemma-4-E4B-it`. It can search products, look up a product ID, list low stock, and report inventory totals. It cannot change stock, place orders, run arbitrary SQL, or verify motorcycle compatibility.
 
@@ -22,7 +22,14 @@ To check prerequisites without installing or changing configuration:
 powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1 -Check
 ```
 
-Edit `.env` locally. Set `ADMIN_USERNAME`, a strong `ADMIN_PASSWORD`, and your course `OPENAI_API_KEY`. The example uses `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`, `ASSISTANT_DATA_MODE=sample`, and `DATABASE_URL=file:./demo.db`. The assistant accepts sample mode only. Keep `.env` private; never paste credentials into screenshots, reports, or Git commits.
+Edit `.env` locally. Set `ADMIN_USERNAME`, a strong `ADMIN_PASSWORD`, and your course `OPENAI_API_KEY`. The shared example uses `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`, `ASSISTANT_DATA_MODE=sample`, and `DATABASE_URL=file:./demo.db`. Login remains required for the shop screens, assistant, data changes and uploaded photos. Keep `.env` private; never paste credentials into screenshots, reports, or Git commits.
+
+Choose the assistant's data source explicitly:
+
+- `ASSISTANT_DATA_MODE=sample` reads the fictional JSON fixture. Database edits do not change these assistant results. This is the default for a fresh setup, the evaluation and the course demonstration.
+- `ASSISTANT_DATA_MODE=shop` opts in to read-only access to the local inventory selected by `DATABASE_URL`. Questions and selected product fields (`id`, `name`, `sku`, `category`, `price`, `stock`, `minStock`), or inventory totals returned by a tool, go to the course proxy. Product descriptions, supplier details, photos and stock-movement history are excluded. Shop mode requires the approved `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`; surrounding whitespace and a trailing slash are accepted. Other endpoints are rejected before networking. This mode uses real shop data and should be enabled only when that disclosure is intended.
+
+The owner's private local configuration uses shop mode. It is not copied into the repository. Sample mode retains a configurable proxy endpoint. Neither mode can change stock through the assistant, and neither establishes motorcycle compatibility. Do not paste credentials, contacts or unrelated private information into questions: free text is sent as entered.
 
 Create a new demonstration database before starting the app:
 
@@ -36,7 +43,17 @@ This creates **new** `demo.db` with the fictional product IDs and opening balanc
 .\.venv\Scripts\python.exe scripts\seed-demo.py demo-second.db
 ```
 
-Existing users with a private shop database can keep their current `DATABASE_URL`; the assistant still answers from the fictional sample, so its product IDs and quantities may differ from the private inventory screens. Use the demo database for a consistent public demonstration. Preserve private SQLite database files together with their WAL data; do not replace them with the demo.
+Existing users with a private shop database can keep their current `DATABASE_URL`. In sample mode, assistant IDs and quantities may differ from those inventory screens; in shop mode, lookups use that database through a read-only connection. Preserve private SQLite database files together with their WAL data; do not replace them with the demo.
+
+For a reproducible course recording, explicitly override both settings in the PowerShell session before starting the app, even if the private `.env` uses shop mode:
+
+```powershell
+$env:ASSISTANT_DATA_MODE = 'sample'
+$env:DATABASE_URL = 'file:./demo.db'
+powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
+```
+
+Check that Assistant shows **Sample catalog** before recording. The seeded demo database initially matches the assistant's separate fictional fixture. Close this PowerShell session after recording so later private-shop sessions use their own configuration.
 
 The application's final folder is `LLMAPP/moto-shop`. Private backups, when present in this workspace, are outside it at `../Project/private_backup`. Keep that folder private and separate from the course repository; the setup and seed scripts do not use it.
 
@@ -84,9 +101,10 @@ The evaluation compares a name/SKU substring baseline with bilingual category, b
 
 These numbers measure **offline product retrieval on the fictional corpus**. They do not establish live model answer accuracy, private-stock freshness, or production safety. Inspect failure cases and keep that distinction in the report.
 
-An optional proxy smoke run sends only the invented sample catalog and demonstration questions. It requires valid local proxy settings and consumes model calls:
+An optional proxy smoke run uses the invented sample catalog and demonstration questions. It requires valid local proxy settings and consumes model calls. Set sample mode explicitly; this is separate from validating shop mode:
 
 ```powershell
+$env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant\live_evaluate.py --limit 1
 ```
 
@@ -115,6 +133,6 @@ See [SUBMISSION.md](SUBMISSION.md) for the three course deliverables and their s
 
 To rebuild the PDF, install the optional `requirements-report.txt` dependencies and run `python scripts/build_report.py`. These document dependencies are not needed to run the app.
 
-All 100 local application tests passed, and a clean installation/build/test/evaluation run passed in GitHub CI. The live sample-only smoke run produced four completed answers and two bounded fallbacks; retained observations are discussed in `docs/verification.md`. Browser appearance was not visually verified because a saved access rule blocked it.
+All 116 local application tests pass, together with TypeScript and the production build. Two owner-authorized live shop-mode checks returned product price/stock and inventory totals matching the real database, without changing business records. The retained synthetic smoke run produced four completed answers and two bounded fallbacks; it measures a separate sample workflow. GitHub CI repeats installation, tests, build and evaluation on every push. See `docs/verification.md` for scope and results. Browser appearance was not visually verified because a saved access rule blocked it.
 
 The owner chose to keep the repository private and record Q3 personally. The course's public-repository requirement and video URL remain pending. No course form has been submitted.

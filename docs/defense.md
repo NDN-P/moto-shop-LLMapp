@@ -2,9 +2,11 @@
 
 ## Opening explanation
 
-“I reused the existing motorcycle shop application and added a bounded, read-only catalog assistant. The class model receives invented sample products only. Product answers expose their source IDs and tool trace, and failed validation produces a fallback. I evaluated retrieval separately from generated answers.”
+“I reused the existing motorcycle shop application and added a bounded, read-only catalog assistant. This demonstration uses invented sample products. An optional shop mode can read real inventory and send selected product evidence to the approved course proxy. Product answers expose their source IDs and tool trace, and failed validation produces a fallback. I evaluated retrieval separately from generated answers, using synthetic data only.”
 
-Show the sample badge before asking a model question. Use the seeded `demo.db` as described in `SUBMISSION.md`: dashboard and inventory start with the same invented products as the assistant's separate fixture. The assistant does not read database edits. Do not copy private business records into the chat or display credentials.
+Set `ASSISTANT_DATA_MODE=sample` and `DATABASE_URL=file:./demo.db` before launching, as shown in `SUBMISSION.md`, even if the private `.env` uses shop mode. Show the **Sample catalog** badge before asking a question. Dashboard and inventory start with the same invented products as the assistant's separate fixture. In sample mode the assistant does not read database edits. Do not copy private business records into the sample chat or display credentials.
+
+For private shop use, `ASSISTANT_DATA_MODE=shop` reads `DATABASE_URL` through a read-only connection. Only the question and selected `id`, `name`, `sku`, `category`, `price`, `stock`, `minStock` fields, or computed inventory totals, go to the course proxy. Descriptions, supplier details, photos and movement history are excluded. Shop mode permits only `https://llm.nat-d.uk/v1`, allowing surrounding whitespace and a trailing slash; a different endpoint is rejected before networking. Sample mode retains a configurable endpoint. Login remains required in both modes. The recorded evaluation and six-request smoke observations do not validate shop-mode answer quality.
 
 ## One design choice to explain
 
@@ -28,7 +30,7 @@ Use a question the examiner chooses about the invented catalog. For a concrete p
 
 Wait for the actual result. Open its source table and lookup details. Compare IDs and values with the returned sample records. If the model returns a fallback or connection error, explain that observed outcome and inspect the trace; do not present a stored answer as a successful new run.
 
-The final recorded six-question smoke run produced four non-fallback answers. The broad motor-oil price request fell back despite successful retrieval, and the injection request fell back without tools. This is a completion observation on six inputs, not a measured answer-accuracy rate.
+The retained six-question synthetic smoke run produced four non-fallback answers. The broad motor-oil price request fell back despite successful retrieval, and the injection request fell back without tools. This is a completion observation on six sample inputs, not a measured answer-accuracy rate or a real-inventory validation.
 
 ## Reproduce checks
 
@@ -40,6 +42,8 @@ Run from the `moto-shop` folder with the documented Node environment and Python 
 .\.venv\Scripts\python.exe assistant/evaluate.py
 npm run check
 npm test
+$env:ASSISTANT_DATA_MODE = 'sample'
+$env:DATABASE_URL = 'file:./demo.db'
 npm run dev
 ```
 
@@ -52,10 +56,11 @@ The first three commands are offline. A safe, separate new-input lookup is:
 This tests deterministic retrieval only. To repeat the bounded real-proxy smoke run, use the command below after configuring `OPENAI_API_KEY` and `OPENAI_BASE_URL` privately. It sends invented sample questions/results and overwrites the saved live smoke report:
 
 ```powershell
+$env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant/live_evaluate.py
 ```
 
-The assistant requires a clearly marked synthetic fixture; database-backed catalogs and CLI database paths are rejected before model access. Keep `.env`, API keys, real database files and supplier/customer records outside the submitted material.
+Sample mode requires a clearly marked synthetic fixture. Shop mode is an explicit opt-in through trusted server configuration; the browser and CLI question payload cannot choose a database path. The updated version passed 116 tests, clean-install CI and two authorized live shop checks. Those two checks verified product values and totals; they do not establish general answer accuracy. Keep `.env`, API keys, real database files and supplier/customer records outside the submitted material.
 
 ## If asked what is unfinished
 

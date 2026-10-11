@@ -6,9 +6,9 @@ Optional audio: `output/demo/narration-guide.mp3` is a synthetic English narrati
 
 ## Before recording
 
-- Start the sample demo with `DATABASE_URL=file:./demo.db` as shown in `SUBMISSION.md`, then sign in. Keep credentials and private windows out of the recording.
+- Start the sample demo with both `ASSISTANT_DATA_MODE=sample` and `DATABASE_URL=file:./demo.db` as shown in `SUBMISSION.md`, even when the private `.env` uses shop mode, then sign in. Keep credentials and private windows out of the recording.
 - Open Dashboard, Inventory, Low Stock and Assistant in the actual browser. Show the existing management UI locally; do not copy real inventory records into the assistant.
-- The assistant must show **Sample catalog**. Its app bridge sends questions and invented fixture results, with no shop database path.
+- The assistant must show **Sample catalog**. In this mode its app bridge sends questions and invented fixture results, with no shop database path. Optional shop mode is separate from this recording: it reads real inventory without writes and sends selected product fields to the approved course proxy. The reported evaluation measures only synthetic data.
 - Use the invented SKU `SM-S06` (part ID 6) for the lookup: “What is the sample price and stock for SKU SM-S06?” For the no-match question ask about sample part ID `9999`, which is absent from the current fixture. Recheck these against `assistant/data/catalog.json` if the fixture changes.
 - Run `python assistant/evaluate.py` with the documented Python environment. Show its current output or `assistant/data/evaluation_results.json`. Read only results actually generated for the invented sample fixture.
 
@@ -28,7 +28,7 @@ Screen: open Inventory, show its search and filters; then open Low Stock. Do not
 
 Screen: open Assistant and point to the sample badge and disclosure.
 
-> The assistant uses an invented sample catalog, separate from real business inventory. The label makes that distinction visible. Only the question and sample tool results go to the class proxy. The application bridge does not pass the shop database path. For this recording, the dashboard uses a demo database seeded from the same sample catalog; the assistant reads its separate fixture. I use generic sample questions and keep private business data out of this chat.
+> For this demonstration, the assistant uses an invented sample catalog, separate from real business inventory. The label makes that distinction visible. Only the question and sample tool results go to the class proxy. In sample mode, the bridge does not pass the shop database path. For this recording, the dashboard uses a demo database seeded from the same sample catalog; the assistant reads its separate fixture. I use generic sample questions and keep private business data out of this chat.
 
 ## 1:35–2:20 — Genuine lookup and no-match behavior
 
@@ -58,6 +58,6 @@ Screen: return to Assistant with its sample badge and evidence visible.
 
 Screen: show the actual configuration, connection error, or bounded fallback. Keep the sample badge visible. Do not show a prerecorded answer as a live result.
 
-> This run shows an assistant connection or response failure, so it does not demonstrate a completed model answer. The interface reports the failure instead of presenting an invented result. The application is still restricted to the invented sample catalog. I can inspect and test the lookup functions locally, but a successful live model run is still needed to verify the full function-calling loop. The evaluation I show next measures deterministic retrieval only. It provides evidence about catalog matching, separately from model behavior.
+> This run shows an assistant connection or response failure, so it does not demonstrate a completed model answer. The interface reports the failure instead of presenting an invented result. This recording stays in sample mode with the invented catalog. I can inspect and test the lookup functions locally, but a successful live model run is still needed to verify the full function-calling loop. The evaluation I show next measures deterministic retrieval only. It provides evidence about catalog matching, separately from model behavior.
 
 With this replacement, show the agent guardrails in the editor at 2:20 rather than claiming that a successful lookup trace was produced. Describe the exact observed error if asked; configuration failure, a proxy error and a bounded model fallback are different outcomes.
