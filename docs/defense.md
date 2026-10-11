@@ -4,7 +4,7 @@
 
 “I reused the existing motorcycle shop application and added a bounded, read-only catalog assistant. The class model receives invented sample products only. Product answers expose their source IDs and tool trace, and failed validation produces a fallback. I evaluated retrieval separately from generated answers.”
 
-Show the sample badge before asking a model question. Dashboard and inventory pages belong to the existing local management application; the assistant's invented fixture is a different dataset. Do not copy private business records into the chat or display credentials.
+Show the sample badge before asking a model question. Use the seeded `demo.db` as described in `SUBMISSION.md`: dashboard and inventory start with the same invented products as the assistant's separate fixture. The assistant does not read database edits. Do not copy private business records into the chat or display credentials.
 
 ## One design choice to explain
 

@@ -6,7 +6,7 @@ Optional audio: `output/demo/narration-guide.mp3` is a synthetic English narrati
 
 ## Before recording
 
-- Start the existing shop and sign in. Keep credentials, supplier contacts and private records out of the recording.
+- Start the sample demo with `DATABASE_URL=file:./demo.db` as shown in `SUBMISSION.md`, then sign in. Keep credentials and private windows out of the recording.
 - Open Dashboard, Inventory, Low Stock and Assistant in the actual browser. Show the existing management UI locally; do not copy real inventory records into the assistant.
 - The assistant must show **Sample catalog**. Its app bridge sends questions and invented fixture results, with no shop database path.
 - Use the invented SKU `SM-S06` (part ID 6) for the lookup: “What is the sample price and stock for SKU SM-S06?” For the no-match question ask about sample part ID `9999`, which is absent from the current fixture. Recheck these against `assistant/data/catalog.json` if the fixture changes.
@@ -28,7 +28,7 @@ Screen: open Inventory, show its search and filters; then open Low Stock. Do not
 
 Screen: open Assistant and point to the sample badge and disclosure.
 
-> The assistant uses an invented sample catalog, separate from real business inventory. The label makes that distinction visible. Only the question and sample tool results go to the class proxy. The application bridge does not pass the shop database path. The dashboard pages still use the local shop database; the assistant's sample results describe a different dataset. I use generic sample questions and keep private business data out of this chat.
+> The assistant uses an invented sample catalog, separate from real business inventory. The label makes that distinction visible. Only the question and sample tool results go to the class proxy. The application bridge does not pass the shop database path. For this recording, the dashboard uses a demo database seeded from the same sample catalog; the assistant reads its separate fixture. I use generic sample questions and keep private business data out of this chat.
 
 ## 1:35–2:20 — Genuine lookup and no-match behavior
 

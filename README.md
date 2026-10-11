@@ -111,7 +111,7 @@ Prices are in THB. Initial balances are not sales history. The fictional catalog
 
 ## Prepared hand-in files
 
-See [SUBMISSION.md](SUBMISSION.md) for the three course deliverables and their status. The six-page report is in `output/pdf/`; the recording script, proposal, measured verification results and defense notes are in `docs/`. Optional English narration is `output/demo/narration-guide.mp3` (4:15), a guide rather than a recorded demonstration.
+See [SUBMISSION.md](SUBMISSION.md) for the three course deliverables and their status. The six-page report is in `output/pdf/`; the recording script, proposal, measured verification results and defense notes are in `docs/`. Optional English narration is `output/demo/narration-guide.mp3` (about four minutes), a guide rather than a recorded demonstration.
 
 To rebuild the PDF, install the optional `requirements-report.txt` dependencies and run `python scripts/build_report.py`. These document dependencies are not needed to run the app.
 

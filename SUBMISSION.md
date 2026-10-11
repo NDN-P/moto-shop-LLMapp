@@ -18,7 +18,7 @@ It covers the intended users and problem, architecture diagram and technique cho
 
 You chose to record the demonstration yourself. Follow `docs/demo-script.md` for a 3-4 minute walkthrough, then upload the recording to unlisted YouTube or a viewable Drive link and submit that URL. A script or narration audio by itself is not a screen recording.
 
-The optional `output/demo/narration-guide.mp3` is a 4-minute-15-second English guide. Use it only when your actual displayed outcomes match the narration; otherwise read the failure replacement from the script. Do not submit the audio file as Q3.
+The optional `output/demo/narration-guide.mp3` is an English guide lasting about four minutes. Use it only when your actual displayed outcomes match the narration; otherwise read the failure replacement from the script. Do not submit the audio file as Q3.
 
 For a recording session using your existing local login and sample inventory, open PowerShell in `LLMAPP/moto-shop`:
 
