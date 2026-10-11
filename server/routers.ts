@@ -4,7 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { createSession, destroySession, getSessionIdFromRequest, validateCredentials } from "./auth-local";
-import { askAssistant, assistantQuestionSchema } from "./assistant";
+import { askAssistant, assistantQuestionSchema, getAssistantDataMode } from "./assistant";
 import {
   createPart,
   createStorageItem,
@@ -36,6 +36,7 @@ const money = z.string().trim().regex(/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/, "Enter a
 export const appRouter = router({
   system: systemRouter,
   assistant: router({
+    config: protectedProcedure.query(() => ({ dataMode: getAssistantDataMode() })),
     ask: protectedProcedure.input(assistantQuestionSchema).mutation(({ input }) => askAssistant(input.question)),
   }),
   auth: router({

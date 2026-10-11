@@ -12,8 +12,10 @@ except ImportError:
 
 
 MODEL = "gemma-4-E4B-it"
+COURSE_PROXY = "https://llm.nat-d.uk/v1"
 MAX_MODEL_TURNS = 4
 MAX_TOOL_CALLS = 6
+PRODUCT_FIELDS = ("id", "name", "sku", "category", "price", "stock", "minStock")
 SYSTEM_PROMPT = """You are the motorcycle shop's read-only inventory assistant.
 Answer in the user's language. Use the provided tools for every shop-specific
 claim, price, stock level or inventory total. Never invent products or quantities.
@@ -107,22 +109,38 @@ def validate_final(content, evidence_ids):
     return {"answer": answer.strip(), "sources": sources}
 
 
-def ask(question, catalog=None, client=None):
+def ask(question, catalog=None, client=None, *, allow_real_data=False):
     if not isinstance(question, str) or not 1 <= len(question.strip()) <= 1000:
         raise AssistantError("Ask a question between 1 and 1000 characters.")
     catalog = catalog if catalog is not None else Catalog()
-    if getattr(catalog, "database_path", None) is not None or getattr(catalog, "is_synthetic", False) is not True:
+    real_inventory = getattr(catalog, "database_path", None) is not None
+    if real_inventory:
+        if allow_real_data is not True:
+            raise AssistantError("Only an invented sample catalog is allowed without explicit real-data approval.")
+        try:
+            if not catalog.database_path.is_file():
+                raise OSError("Missing database")
+            catalog.inventory_summary()
+        except Exception:
+            raise AssistantError("The configured shop database is unavailable.") from None
+    elif getattr(catalog, "is_synthetic", False) is not True:
         raise AssistantError("Only a clearly marked invented sample catalog is allowed for the assistant.")
     if client is None:
         if not os.getenv("OPENAI_API_KEY", "").strip() or not os.getenv("OPENAI_BASE_URL", "").strip():
             raise AssistantError("Configure OPENAI_API_KEY and OPENAI_BASE_URL for the course proxy.")
+        base_url = os.environ["OPENAI_BASE_URL"].strip()
+        if real_inventory and base_url.rstrip("/") != COURSE_PROXY:
+            raise AssistantError("Shop mode requires the authorized course proxy.")
         try:
             from openai import OpenAI
         except ImportError:
             raise AssistantError("Install the assistant Python requirements first.") from None
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"],
-                        base_url=os.environ["OPENAI_BASE_URL"], timeout=20, max_retries=0)
-    data_note = ("\nThe tools use invented sample products. Describe their prices and stock as "
+                        base_url=base_url, timeout=20, max_retries=0)
+    data_note = ("\nThe tools read the current shop inventory. Report the returned product prices "
+                 "and stock as current inventory; each lookup is read-only."
+                 if real_inventory else
+                 "\nThe tools use invented sample products. Describe their prices and stock as "
                  "sample data, never as the real shop's inventory.")
     messages = [{"role": "system", "content": SYSTEM_PROMPT + data_note},
                 {"role": "user", "content": question.strip()}]
@@ -205,6 +223,11 @@ def ask(question, catalog=None, client=None):
                     status = "ok"
                     if name != "inventory_summary":
                         rows = result if isinstance(result, list) else [result]
+                        public_rows = [{key: row.get(key) for key in PRODUCT_FIELDS}
+                                       for row in rows if row is not None]
+                        result = (public_rows if isinstance(result, list) else
+                                  public_rows[0] if public_rows else None)
+                        rows = public_rows
                         evidence_ids.update(row["id"] for row in rows
                                             if isinstance(row, dict) and type(row.get("id")) is int)
             except (ValueError, TypeError, KeyError):
@@ -215,6 +238,27 @@ def ask(question, catalog=None, client=None):
             messages.append({"role": "tool", "tool_call_id": call["id"],
                              "content": json.dumps(result, ensure_ascii=False, allow_nan=False)})
     return fallback()
+
+
+def _configured_catalog():
+    mode = os.getenv("ASSISTANT_DATA_MODE") or "sample"
+    if mode == "sample":
+        return Catalog(), False
+    if mode != "shop":
+        raise AssistantError("ASSISTANT_DATA_MODE must be sample or shop.")
+    configured = os.getenv("DATABASE_URL", "").strip()
+    if not configured:
+        raise AssistantError("Configure DATABASE_URL for shop mode.")
+    try:
+        path = configured.removeprefix("file:")
+        if not path:
+            raise ValueError("Missing database")
+        catalog = Catalog(database_path=path)
+        if not catalog.database_path.is_file():
+            raise OSError("Missing database")
+    except (OSError, ValueError):
+        raise AssistantError("The configured shop database is unavailable.") from None
+    return catalog, True
 
 
 def main():
@@ -229,7 +273,8 @@ def main():
         payload = json.loads(line)
         if not isinstance(payload, dict) or set(payload) != {"question"}:
             raise AssistantError("Invalid assistant request.")
-        result = ask(payload["question"])
+        catalog, allow_real_data = _configured_catalog()
+        result = ask(payload["question"], catalog=catalog, allow_real_data=allow_real_data)
         print(json.dumps(result, ensure_ascii=False, allow_nan=False))
         return 0
     except AssistantError as exc:

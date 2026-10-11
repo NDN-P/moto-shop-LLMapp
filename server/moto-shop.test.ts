@@ -12,7 +12,7 @@ function createMockContext(overrides?: Partial<TrpcContext>): TrpcContext {
     openId: "test-user-open-id",
     email: "test@shop-name.example",
     name: "Test User",
-    loginMethod: "manus",
+    loginMethod: "local",
     role: "admin",
     createdAt: new Date(),
     updatedAt: new Date(),

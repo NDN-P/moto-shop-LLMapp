@@ -1,7 +1,10 @@
 import copy
+import hashlib
+import io
 import json
 import os
 from pathlib import Path
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -10,8 +13,10 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 try:
+    from . import agent as agent_module
     from .agent import AssistantError, Catalog, MODEL, ask, validate_arguments, validate_final
 except ImportError:
+    import agent as agent_module
     from agent import AssistantError, Catalog, MODEL, ask, validate_arguments, validate_final
 
 
@@ -23,6 +28,30 @@ def completion(content=None, calls=()):
     return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(
         content=content, tool_calls=[SimpleNamespace(id=str(index), function=SimpleNamespace(
             name=name, arguments=arguments)) for index, (name, arguments) in enumerate(calls)]))])
+
+
+def temporary_inventory(path):
+    writer = sqlite3.connect(path)
+    writer.execute("PRAGMA journal_mode=WAL")
+    writer.execute("CREATE TABLE parts (id INTEGER, name TEXT, sku TEXT, category TEXT, "
+                   "price TEXT, stock INTEGER, minStock INTEGER, description TEXT, isActive INTEGER, "
+                   "supplierContact TEXT, photoPath TEXT, notes TEXT)")
+    writer.executemany("INSERT INTO parts VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (
+        (1, "Motor oil", "OIL-1", "น้ำมันเครื่อง", "200", 4, 5, "description-sentinel", 1,
+         "supplier-sentinel", "photo-path-sentinel", "notes-sentinel"),
+        (2, "Inactive product", "HIDDEN", "น้ำมันเครื่อง", "100", 20, 5, None, 0, None, None, None),
+    ))
+    writer.commit()
+    return writer
+
+
+def run_cli(payload, environment):
+    stdin = io.TextIOWrapper(io.BytesIO(json.dumps(payload).encode() + b"\n"), encoding="utf-8")
+    stdout = io.StringIO()
+    with patch.dict(os.environ, environment, clear=True), patch.object(sys, "stdin", stdin), \
+            patch.object(sys, "stdout", stdout), patch.object(sys, "stderr", io.StringIO()):
+        status = agent_module.main()
+    return status, json.loads(stdout.getvalue())
 
 
 class FakeClient:
@@ -203,7 +232,7 @@ class AgentTests(unittest.TestCase):
             "sys.stdin=io.TextIOWrapper(io.BytesIO(b'{\\\"question\\\":\\\"tube\\\"}\\n'),encoding='cp1252'); "
             "raise SystemExit(agent.main())"
         )
-        environment = {**os.environ, "PYTHONIOENCODING": "cp1252"}
+        environment = {**os.environ, "PYTHONIOENCODING": "cp1252", "ASSISTANT_DATA_MODE": "sample"}
         completed = subprocess.run([sys.executable, "-c", program],
                                    cwd=Path(__file__).resolve().parents[1], env=environment,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10, check=True)
@@ -250,13 +279,109 @@ class AgentTests(unittest.TestCase):
                 ask("inventory totals", Catalog(database_path="private-shop.db"))
         sdk.assert_not_called()
 
+    def test_real_inventory_opt_in_sanitizes_evidence_and_sees_wal_updates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "isolated-inventory.sqlite"
+            writer = temporary_inventory(path)
+            try:
+                catalog = Catalog(database_path=path)
+                monitored = [path, Path(str(path) + "-wal")]
+                before = {file: hashlib.sha256(file.read_bytes()).hexdigest() for file in monitored}
+                client = FakeClient([
+                    completion(calls=[("get_part", '{"part_id":1}'), ("search_parts", '{"query":"oil"}'),
+                                      ("get_low_stock", "{}"), ("inventory_summary", "{}")]),
+                    completion('{"answer":"Motor oil is 200 THB, stock 4.","sources":[1]}'),
+                ])
+                result = ask("Current oil stock?", catalog, client, allow_real_data=True)
+                self.assertIn("current shop inventory", client.requests[0]["messages"][0]["content"])
+                self.assertEqual(result["sources"], [1])
+                fields = {"id", "name", "sku", "category", "price", "stock", "minStock"}
+                self.assertEqual(set(result["trace"][0]["result"]), fields)
+                self.assertEqual(set(result["trace"][1]["result"][0]), fields)
+                self.assertEqual(set(result["trace"][2]["result"][0]), fields)
+                self.assertEqual(result["trace"][3]["result"]["total_parts"], 1)
+                serialized = json.dumps({"requests": client.requests, "result": result})
+                for private in ("description-sentinel", "supplier-sentinel", "photo-path-sentinel",
+                                "notes-sentinel", "Inactive product", str(path)):
+                    self.assertNotIn(private, serialized)
+                self.assertEqual(before, {file: hashlib.sha256(file.read_bytes()).hexdigest() for file in monitored})
+                writer.execute("UPDATE parts SET stock=9 WHERE id=1")
+                writer.commit()
+                fresh = FakeClient([completion(calls=[("get_part", '{"part_id":1}')]),
+                                    completion('{"answer":"Stock is now 9.","sources":[1]}')])
+                self.assertEqual(ask("Current stock?", catalog, fresh, allow_real_data=True)
+                                 ["trace"][0]["result"]["stock"], 9)
+            finally:
+                writer.close()
+
+    def test_real_inventory_requires_approved_proxy_before_sdk_construction(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "isolated-inventory.sqlite"
+            writer = temporary_inventory(path)
+            try:
+                catalog = Catalog(database_path=path)
+                sdk = Mock(side_effect=AssertionError("Client must not be constructed"))
+                environment = {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://other.invalid/v1"}
+                with patch.dict(os.environ, environment, clear=True), \
+                        patch.dict(sys.modules, {"openai": SimpleNamespace(OpenAI=sdk)}):
+                    with self.assertRaisesRegex(AssistantError, "authorized course proxy"):
+                        ask("stock?", catalog, allow_real_data=True)
+                sdk.assert_not_called()
+                client = FakeClient([completion(calls=[("get_part", '{"part_id":1}')]),
+                                     completion('{"answer":"Stock is 4.","sources":[1]}')])
+                sdk = Mock(return_value=client)
+                environment["OPENAI_BASE_URL"] = "  https://llm.nat-d.uk/v1/  "
+                with patch.dict(os.environ, environment, clear=True), \
+                        patch.dict(sys.modules, {"openai": SimpleNamespace(OpenAI=sdk)}):
+                    self.assertEqual(ask("stock?", catalog, allow_real_data=True)["sources"], [1])
+                self.assertEqual(sdk.call_args.kwargs["base_url"], "https://llm.nat-d.uk/v1/")
+            finally:
+                writer.close()
+
+    def test_cli_defaults_sample_and_shop_uses_only_trusted_database(self):
+        response = {"answer": "Mock answer", "sources": [], "trace": []}
+        with patch.object(agent_module, "ask", return_value=response) as mocked:
+            self.assertEqual(run_cli({"question": "stock?"}, {}), (0, response))
+            self.assertIsNone(mocked.call_args.kwargs["catalog"].database_path)
+            self.assertIs(mocked.call_args.kwargs["allow_real_data"], False)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "isolated-inventory.sqlite"
+            writer = temporary_inventory(path)
+            try:
+                with patch.object(agent_module, "ask", return_value=response) as mocked:
+                    environment = {"ASSISTANT_DATA_MODE": "shop", "DATABASE_URL": "file:" + str(path)}
+                    self.assertEqual(run_cli({"question": "stock?"}, environment), (0, response))
+                    self.assertEqual(mocked.call_args.kwargs["catalog"].database_path, path.resolve())
+                    self.assertIs(mocked.call_args.kwargs["allow_real_data"], True)
+            finally:
+                writer.close()
+
+    def test_cli_bad_modes_and_missing_nonfile_databases_do_not_dispatch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            environments = (
+                ({"ASSISTANT_DATA_MODE": "unknown"}, "ASSISTANT_DATA_MODE must be sample or shop."),
+                ({"ASSISTANT_DATA_MODE": "shop"}, "Configure DATABASE_URL for shop mode."),
+                ({"ASSISTANT_DATA_MODE": "shop", "DATABASE_URL": "file:" + str(Path(directory) / "missing.sqlite")},
+                 "The configured shop database is unavailable."),
+                ({"ASSISTANT_DATA_MODE": "shop", "DATABASE_URL": "file:" + directory},
+                 "The configured shop database is unavailable."),
+                ({"ASSISTANT_DATA_MODE": "shop", "DATABASE_URL": "file:"},
+                 "The configured shop database is unavailable."),
+            )
+            for environment, message in environments:
+                with self.subTest(environment=environment), patch.object(agent_module, "ask") as blocked:
+                    status, result = run_cli({"question": "stock?"}, environment)
+                    self.assertEqual((status, result), (1, {"error": message}))
+                    blocked.assert_not_called()
+
     def test_unmarked_fixture_rejected_and_temporary_synthetic_fixture_allowed(self):
         with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as directory:
             fixture = Path(directory) / "catalog.json"
             fixture.write_text(json.dumps({"parts": [PART]}), encoding="utf-8")
             blocked_client = FakeClient([])
-            with self.assertRaisesRegex(AssistantError, "invented sample catalog"):
-                ask("oil", Catalog(fixture_path=fixture), blocked_client)
+            for approved in (False, True):
+                with self.assertRaisesRegex(AssistantError, "invented sample catalog"):
+                    ask("oil", Catalog(fixture_path=fixture), blocked_client, allow_real_data=approved)
             self.assertEqual(blocked_client.requests, [])
             fixture.write_text(json.dumps({"synthetic": True, "parts": [PART]}), encoding="utf-8")
             client = FakeClient([completion(calls=[("get_part", '{"part_id":1}')]),
