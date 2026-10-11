@@ -1,0 +1,917 @@
+{
+  "metadata": {
+    "generated_at_utc": "2026-10-11T07:20:22.786839+00:00",
+    "python_version": "3.12.14",
+    "catalog_sha256": "66566f287a55d11742ba5dfd7c8bfb6f3a41449c47c2e33816a21ffac2e5cac8",
+    "questions_sha256": "3c06e3e183b16e05b66b3fb15b65d3105d9dd1d29087e6686b148a47fbba56d9",
+    "top_k": 5,
+    "baseline": "Existing name/SKU case-insensitive substring matcher, name then ID order, with shared category/price/stock tool filters.",
+    "enhanced": "Explicit bilingual category/brand/size normalization and AND token matching; fixed field weights 3/4/2/1 for name/SKU/category/description.",
+    "metric_policy": "Recall@5 and MRR are macro-averaged over answerable queries only. Zero-result accuracy is reported separately over gold-empty queries.",
+    "synthetic_data": true,
+    "scope": "Offline product retrieval on an entirely invented course-demo catalog. These numbers do not measure real shop search quality, LLM answer quality, database freshness, or production safety.",
+    "labeling": "Relevant IDs were hand-labelled by reading the entirely invented 27-product course-demo fixture. All brands, names, prices, sizes and stock are fictional. Duplicate SKUs can refer to different product IDs.",
+    "split_policy": "10 development questions and20 fixed evaluation questions. Vocabulary and field weights are specified before this synthetic evaluation. Test cases are not used to tune weights, but the same author created fixture, questions and retriever, so this is not an independently blinded benchmark."
+  },
+  "summary": {
+    "dev": {
+      "baseline": {
+        "queries": 10,
+        "answerable_queries": 8,
+        "zero_result_queries": 2,
+        "recall_at_5": 0.375,
+        "mrr": 0.375,
+        "zero_result_accuracy": 1.0
+      },
+      "enhanced": {
+        "queries": 10,
+        "answerable_queries": 8,
+        "zero_result_queries": 2,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "zero_result_accuracy": 1.0
+      }
+    },
+    "test": {
+      "baseline": {
+        "queries": 20,
+        "answerable_queries": 17,
+        "zero_result_queries": 3,
+        "recall_at_5": 0.3764705882352941,
+        "mrr": 0.4117647058823529,
+        "zero_result_accuracy": 1.0
+      },
+      "enhanced": {
+        "queries": 20,
+        "answerable_queries": 17,
+        "zero_result_queries": 3,
+        "recall_at_5": 0.9117647058823529,
+        "mrr": 0.9411764705882353,
+        "zero_result_accuracy": 1.0
+      }
+    },
+    "all": {
+      "baseline": {
+        "queries": 30,
+        "answerable_queries": 25,
+        "zero_result_queries": 5,
+        "recall_at_5": 0.376,
+        "mrr": 0.4,
+        "zero_result_accuracy": 1.0
+      },
+      "enhanced": {
+        "queries": 30,
+        "answerable_queries": 25,
+        "zero_result_queries": 5,
+        "recall_at_5": 0.94,
+        "mrr": 0.96,
+        "zero_result_accuracy": 1.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "D01",
+      "split": "dev",
+      "group": "thai_exact",
+      "query": "โรดฟ็อกซ์ 0.6",
+      "filters": {},
+      "relevant_ids": [
+        3
+      ],
+      "rationale": "Exact fictional 82-baht oil name.",
+      "baseline": {
+        "retrieved_ids": [
+          3
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          3,
+          8
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D02",
+      "split": "dev",
+      "group": "english_brand_size",
+      "query": "RiderPlus 0.6L",
+      "filters": {},
+      "relevant_ids": [
+        4
+      ],
+      "rationale": "Invented RiderPlus 0.6-litre oil.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D03",
+      "split": "dev",
+      "group": "english_category_size",
+      "query": "inner tube 240-16",
+      "filters": {},
+      "relevant_ids": [
+        18,
+        26
+      ],
+      "rationale": "Both RoadFox and SwiftMoto tubes have this invented size.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D04",
+      "split": "dev",
+      "group": "thai_category",
+      "query": "น้ำมันเบรก",
+      "filters": {},
+      "relevant_ids": [
+        16,
+        17
+      ],
+      "rationale": "Both fictional brake fluids: 0.25 and 0.6 litres.",
+      "baseline": {
+        "retrieved_ids": [
+          16,
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          16,
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D05",
+      "split": "dev",
+      "group": "duplicate_sku",
+      "query": "FX-O06",
+      "filters": {},
+      "relevant_ids": [
+        3,
+        4
+      ],
+      "rationale": "Deliberately duplicated fictional SKU; two distinct products.",
+      "baseline": {
+        "retrieved_ids": [
+          3,
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          3,
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D06",
+      "split": "dev",
+      "group": "english_brand_size",
+      "query": "RoadFox active 1.2L",
+      "filters": {},
+      "relevant_ids": [
+        9
+      ],
+      "rationale": "Fictional RoadFox Active 1.2-litre oil.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D07",
+      "split": "dev",
+      "group": "structured_price_stock",
+      "query": "engine oil",
+      "filters": {
+        "max_price": 90,
+        "min_stock": 20
+      },
+      "relevant_ids": [
+        3,
+        10,
+        12
+      ],
+      "rationale": "Oils cost at most 90 and have at least 20 units; cheap RiderPlus rows have only 17/18 units.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          10,
+          3,
+          12
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "D08",
+      "split": "dev",
+      "group": "unavailable_category",
+      "query": "spark plug",
+      "filters": {},
+      "relevant_ids": [],
+      "rationale": "No spark plugs exist in this fictional fixture.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "D09",
+      "split": "dev",
+      "group": "unavailable_category",
+      "query": "ยางนอก",
+      "filters": {},
+      "relevant_ids": [],
+      "rationale": "Invented fixture has inner tubes but no outer tires.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "D10",
+      "split": "dev",
+      "group": "english_category_size",
+      "query": "motor oil 0.6 L",
+      "filters": {},
+      "relevant_ids": [
+        3,
+        4,
+        6,
+        8
+      ],
+      "rationale": "Four fictional oils have the 0.6-litre size.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          6,
+          3,
+          8,
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T01",
+      "split": "test",
+      "group": "thai_brand",
+      "query": "ไรเดอร์พลัส",
+      "filters": {
+        "category": "engine oil"
+      },
+      "relevant_ids": [
+        4,
+        5,
+        11
+      ],
+      "rationale": "Three RiderPlus engine oils: 0.6, 1.2 and 0.4 litres.",
+      "baseline": {
+        "retrieved_ids": [
+          11,
+          4,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          11,
+          4,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T02",
+      "split": "test",
+      "group": "plain_size",
+      "query": "240-16",
+      "filters": {},
+      "relevant_ids": [
+        18,
+        26
+      ],
+      "rationale": "Both fictional tubes have this exact size.",
+      "baseline": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T03",
+      "split": "test",
+      "group": "duplicate_sku",
+      "query": "sm-t16",
+      "filters": {},
+      "relevant_ids": [
+        26,
+        27
+      ],
+      "rationale": "Case-insensitive match for two intentionally duplicated fictional SKUs.",
+      "baseline": {
+        "retrieved_ids": [
+          27,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          27,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T04",
+      "split": "test",
+      "group": "thai_exact",
+      "query": "น้ำมันเบรก สวิฟต์โมโต 0.25",
+      "filters": {},
+      "relevant_ids": [
+        16
+      ],
+      "rationale": "Exact invented 57-baht brake fluid name.",
+      "baseline": {
+        "retrieved_ids": [
+          16
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          16
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T05",
+      "split": "test",
+      "group": "thai_brand",
+      "query": "โรดฟ็อกซ์",
+      "filters": {
+        "category": "engine oil"
+      },
+      "relevant_ids": [
+        3,
+        8,
+        9,
+        12
+      ],
+      "rationale": "Four fictional RoadFox engine oils.",
+      "baseline": {
+        "retrieved_ids": [
+          3,
+          12,
+          8,
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          3,
+          12,
+          8,
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T06",
+      "split": "test",
+      "group": "english_brand_category",
+      "query": "RoadFox gear oil",
+      "filters": {},
+      "relevant_ids": [
+        13
+      ],
+      "rationale": "Fictional RoadFox gear oil is ID13.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          13
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T07",
+      "split": "test",
+      "group": "english_brand_category",
+      "query": "RiderPlus gear oil",
+      "filters": {},
+      "relevant_ids": [
+        14
+      ],
+      "rationale": "Fictional RiderPlus gear oil is ID14.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          14
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T08",
+      "split": "test",
+      "group": "english_brand_broad",
+      "query": "RoadFox",
+      "filters": {},
+      "relevant_ids": [
+        3,
+        8,
+        9,
+        12,
+        13,
+        15,
+        18,
+        19,
+        22,
+        23
+      ],
+      "rationale": "Ten fictional RoadFox products across categories; top-five recall cannot exceed 0.5.",
+      "baseline": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23
+        ],
+        "recall_at_5": 0.4,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23,
+          3
+        ],
+        "recall_at_5": 0.5,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T09",
+      "split": "test",
+      "group": "english_brand_size",
+      "query": "SwiftMoto sport 0.6L",
+      "filters": {},
+      "relevant_ids": [
+        6
+      ],
+      "rationale": "Fictional SwiftMoto Sport 0.6-litre oil.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          6
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T10",
+      "split": "test",
+      "group": "english_category_size",
+      "query": "motor oil 1.2L",
+      "filters": {},
+      "relevant_ids": [
+        5,
+        7,
+        9
+      ],
+      "rationale": "Three fictional 1.2-litre engine oils.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          7,
+          9,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T11",
+      "split": "test",
+      "group": "size_notation",
+      "query": "inner tube 2.60/2.90-16",
+      "filters": {},
+      "relevant_ids": [
+        23
+      ],
+      "rationale": "Fictional compact size 260/290-16 corresponds to these two decimal widths.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          23
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T12",
+      "split": "test",
+      "group": "thai_category_size",
+      "query": "ยางใน 220-16",
+      "filters": {},
+      "relevant_ids": [
+        19,
+        27
+      ],
+      "rationale": "Fictional RoadFox and SwiftMoto inner tubes share this size.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          27
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T13",
+      "split": "test",
+      "group": "structured_category_price",
+      "query": "RoadFox",
+      "filters": {
+        "category": "inner tube",
+        "max_price": 81
+      },
+      "relevant_ids": [
+        18,
+        19,
+        22
+      ],
+      "rationale": "Three fictional RoadFox tubes cost at most81; the fourth costs87.",
+      "baseline": {
+        "retrieved_ids": [
+          19,
+          22,
+          18
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          22,
+          18
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T14",
+      "split": "test",
+      "group": "structured_price",
+      "query": "engine oil",
+      "filters": {
+        "max_price": 65
+      },
+      "relevant_ids": [
+        10,
+        11
+      ],
+      "rationale": "Only invented SwiftMoto0.4 and RiderPlus0.4 oils cost61 and59.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          10,
+          11
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T15",
+      "split": "test",
+      "group": "structured_price_stock",
+      "query": "ยางใน",
+      "filters": {
+        "max_price": 75,
+        "min_stock": 10
+      },
+      "relevant_ids": [
+        18,
+        19,
+        27
+      ],
+      "rationale": "Three fictional tubes meet both filters; SwiftMoto240-16 has only four units.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          27,
+          18
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T16",
+      "split": "test",
+      "group": "structured_price",
+      "query": "brake fluid",
+      "filters": {
+        "max_price": 60
+      },
+      "relevant_ids": [
+        16
+      ],
+      "rationale": "Only fictional0.25-litre brake fluid costs at most60.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          16
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "T17",
+      "split": "test",
+      "group": "unavailable_category",
+      "query": "tubeless tire 80/85-16",
+      "filters": {},
+      "relevant_ids": [],
+      "rationale": "No tubeless/outer tire exists in this invented fixture.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "T18",
+      "split": "test",
+      "group": "unavailable_category",
+      "query": "headlight bulb",
+      "filters": {},
+      "relevant_ids": [],
+      "rationale": "No lighting product exists in this invented fixture.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "T19",
+      "split": "test",
+      "group": "unavailable_category",
+      "query": "brake pads",
+      "filters": {},
+      "relevant_ids": [],
+      "rationale": "Invented brake fluid exists, but brake pads do not.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "T20",
+      "split": "test",
+      "group": "unsupported_comparative",
+      "query": "cheapest engine oil",
+      "filters": {},
+      "relevant_ids": [
+        11,
+        10,
+        12,
+        3,
+        4
+      ],
+      "rationale": "The five cheapest fictional oils cost59,61,75,82,88. Comparative language is outside the small retrieval grammar and exposes a real limitation.",
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    }
+  ]
+}

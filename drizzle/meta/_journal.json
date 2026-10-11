@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1776927102245,
+      "tag": "0000_busy_fat_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1776927300306,
+      "tag": "0001_easy_terrax",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1776929041921,
+      "tag": "0002_flashy_paibok",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1776933536154,
+      "tag": "0003_whole_corsair",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1776934268946,
+      "tag": "0004_productive_doctor_octopus",
+      "breakpoints": true
+    }
+  ]
+}

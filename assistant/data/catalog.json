@@ -1,0 +1,277 @@
+{
+  "synthetic": true,
+  "description": "Entirely fictional course-demo catalog. All product names, brands, sizes, prices and stock were invented. No real shop records, supplier contacts or customer data are included. Products are not offered for sale.",
+  "parts": [
+    {
+      "id": 3,
+      "name": "โรดฟ็อกซ์ 0.6",
+      "sku": "FX-O06",
+      "category": "น้ำมันเครื่อง",
+      "price": 82.0,
+      "stock": 24,
+      "minStock": 5,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 4,
+      "name": "ไรเดอร์พลัส 0.6",
+      "sku": "FX-O06",
+      "category": "น้ำมันเครื่อง",
+      "price": 88.0,
+      "stock": 18,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 5,
+      "name": "ไรเดอร์พลัส 1.2",
+      "sku": "RP-O12",
+      "category": "น้ำมันเครื่อง",
+      "price": 139.0,
+      "stock": 14,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 6,
+      "name": "สวิฟต์โมโต สปอร์ต 0.6",
+      "sku": "SM-S06",
+      "category": "น้ำมันเครื่อง",
+      "price": 168.0,
+      "stock": 12,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 7,
+      "name": "สวิฟต์โมโต สปอร์ต 1.2",
+      "sku": "SM-S12",
+      "category": "น้ำมันเครื่อง",
+      "price": 214.0,
+      "stock": 2,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 8,
+      "name": "โรดฟ็อกซ์ แอคทีฟ 0.6",
+      "sku": "RF-A06",
+      "category": "น้ำมันเครื่อง",
+      "price": 126.0,
+      "stock": 16,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 9,
+      "name": "โรดฟ็อกซ์ แอคทีฟ 1.2",
+      "sku": "RF-A12",
+      "category": "น้ำมันเครื่อง",
+      "price": 158.0,
+      "stock": 13,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 10,
+      "name": "สวิฟต์โมโต 0.4",
+      "sku": "SM-O04",
+      "category": "น้ำมันเครื่อง",
+      "price": 61.0,
+      "stock": 22,
+      "minStock": 5,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 11,
+      "name": "ไรเดอร์พลัส 0.4",
+      "sku": "RP-O04",
+      "category": "น้ำมันเครื่อง",
+      "price": 59.0,
+      "stock": 17,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 12,
+      "name": "โรดฟ็อกซ์ อีโค 0.7",
+      "sku": "RF-E07",
+      "category": "น้ำมันเครื่อง",
+      "price": 75.0,
+      "stock": 26,
+      "minStock": 5,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 13,
+      "name": "โรดฟ็อกซ์ เฟืองท้าย 0.15",
+      "sku": "RF-G15",
+      "category": "น้ำมันเฟืองท้าย",
+      "price": 43.0,
+      "stock": 6,
+      "minStock": 2,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 14,
+      "name": "ไรเดอร์พลัส เฟืองท้าย 0.15",
+      "sku": "RP-G15",
+      "category": "น้ำมันเฟืองท้าย",
+      "price": 49.0,
+      "stock": 15,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 15,
+      "name": "โรดฟ็อกซ์ ชุดทัวร์",
+      "sku": "RF-KIT",
+      "category": "น้ำมันชุด",
+      "price": 189.0,
+      "stock": 11,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 16,
+      "name": "น้ำมันเบรก สวิฟต์โมโต 0.25",
+      "sku": "SM-B25",
+      "category": "น้ำมันเบรก",
+      "price": 57.0,
+      "stock": 2,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 17,
+      "name": "น้ำมันเบรก สวิฟต์โมโต 0.6",
+      "sku": "SM-B60",
+      "category": "น้ำมันเบรก",
+      "price": 104.0,
+      "stock": 7,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 18,
+      "name": "240-16 RoadFox",
+      "sku": "RF-T16",
+      "category": "ยางใน",
+      "price": 64.0,
+      "stock": 32,
+      "minStock": 6,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 19,
+      "name": "220-16 RoadFox",
+      "sku": "RF-T22",
+      "category": "ยางใน",
+      "price": 62.0,
+      "stock": 21,
+      "minStock": 6,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 20,
+      "name": "260/290-13 RiderPlus",
+      "sku": "RP-T13",
+      "category": "ยางใน",
+      "price": 79.0,
+      "stock": 12,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 21,
+      "name": "190-16 SwiftMoto",
+      "sku": "SM-T19",
+      "category": "ยางใน",
+      "price": 66.0,
+      "stock": 8,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 22,
+      "name": "240-13 RoadFox",
+      "sku": "RF-T13",
+      "category": "ยางใน",
+      "price": 81.0,
+      "stock": 18,
+      "minStock": 5,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 23,
+      "name": "260/290-16 RoadFox",
+      "sku": "RF-T29",
+      "category": "ยางใน",
+      "price": 87.0,
+      "stock": 23,
+      "minStock": 7,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 24,
+      "name": "270-18 SwiftMoto",
+      "sku": "SM-T18",
+      "category": "ยางใน",
+      "price": 108.0,
+      "stock": 7,
+      "minStock": 2,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 25,
+      "name": "340/390-19 RiderPlus",
+      "sku": "RP-T39",
+      "category": "ยางใน",
+      "price": 169.0,
+      "stock": 2,
+      "minStock": 2,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 26,
+      "name": "240-16 SwiftMoto",
+      "sku": "SM-T16",
+      "category": "ยางใน",
+      "price": 73.0,
+      "stock": 4,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 27,
+      "name": "220-16 SwiftMoto",
+      "sku": "SM-T16",
+      "category": "ยางใน",
+      "price": 71.0,
+      "stock": 12,
+      "minStock": 4,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 28,
+      "name": "340-11 RiderPlus",
+      "sku": "RP-T11",
+      "category": "ยางใน",
+      "price": 122.0,
+      "stock": 10,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    },
+    {
+      "id": 29,
+      "name": "260/290-9 SwiftMoto",
+      "sku": "SM-T09",
+      "category": "ยางใน",
+      "price": 116.0,
+      "stock": 9,
+      "minStock": 3,
+      "description": "Invented demonstration item; not offered for sale."
+    }
+  ],
+  "storage": []
+}
