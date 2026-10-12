@@ -7,10 +7,10 @@ from pathlib import Path
 
 try:
     from .catalog import Catalog
-    from .evaluate import evaluate, score_result
+    from .evaluate import bm25_search, evaluate, score_result
 except ImportError:
     from catalog import Catalog
-    from evaluate import evaluate, score_result
+    from evaluate import bm25_search, evaluate, score_result
 
 
 class CatalogTests(unittest.TestCase):
@@ -145,6 +145,21 @@ class CatalogTests(unittest.TestCase):
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_bm25_ranks_overlap_without_requiring_whole_query_substring(self):
+        parts = [{"id": 1, "name": "brake fluid"},
+                 {"id": 2, "name": "rear brake pad"},
+                 {"id": 3, "name": "engine oil"}]
+        self.assertEqual([part["id"] for part in bm25_search(parts, "PAD brake")], [2, 1])
+        self.assertEqual(bm25_search(parts, "headlight"), [])
+        self.assertEqual(bm25_search(parts, ""), [])
+        self.assertEqual(bm25_search([], "brake"), [])
+
+    def test_bm25_preserves_thai_marks_and_does_not_translate_categories(self):
+        parts = [{"id": 1, "name": "น้ำมันเครื่อง 0.6", "category": "น้ำมันเครื่อง"}]
+        self.assertEqual([part["id"] for part in bm25_search(parts, "น้ำมันเครื่อง")], [1])
+        self.assertEqual(bm25_search(parts, "engine oil"), [])
+        self.assertEqual(bm25_search(parts, "นามันเครื่อง"), [])
+
     def test_metrics_use_relevant_denominator_and_separate_empty_gold(self):
         self.assertEqual(score_result([9, 2, 3], [2, 4]),
                          {"recall_at_5": 0.5, "reciprocal_rank": 0.5, "zero_result_correct": None})
@@ -162,8 +177,11 @@ class EvaluationTests(unittest.TestCase):
         self.assertEqual(len(report["results"]), 30)
         self.assertEqual(before, [path.read_bytes() for path in paths])
         for row in report["results"]:
-            for method in ("baseline", "enhanced"):
+            for method in ("baseline", "bm25", "enhanced"):
                 self.assertLessEqual(len(row[method]["retrieved_ids"]), 5)
+        for question in (row for row in report["results"] if row.get("filters")):
+            filtered = Catalog(fixture_path=paths[0]).search_parts(limit=100, enhanced=False, **question["filters"])
+            self.assertTrue(set(question["bm25"]["retrieved_ids"]).issubset({part["id"] for part in filtered}))
 
 
 if __name__ == "__main__":

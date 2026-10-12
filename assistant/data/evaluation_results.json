@@ -1,17 +1,19 @@
 {
   "metadata": {
-    "generated_at_utc": "2026-10-11T07:20:22.786839+00:00",
+    "generated_at_utc": "2026-10-12T07:51:23.911537+00:00",
     "python_version": "3.12.14",
     "catalog_sha256": "66566f287a55d11742ba5dfd7c8bfb6f3a41449c47c2e33816a21ffac2e5cac8",
     "questions_sha256": "3c06e3e183b16e05b66b3fb15b65d3105d9dd1d29087e6686b148a47fbba56d9",
     "top_k": 5,
     "baseline": "Existing name/SKU case-insensitive substring matcher, name then ID order, with shared category/price/stock tool filters.",
+    "bm25": "Standard lexical BM25 (k1=1.2, b=0.75) over equally weighted name/SKU/category/description fields after the same structured filters. NFKC case folding and Thai-preserving word/size/SKU tokens; OR matching, positive scores only, name/ID tie-break. No aliases, translation, stop-word list or label-tuned rules.",
     "enhanced": "Explicit bilingual category/brand/size normalization and AND token matching; fixed field weights 3/4/2/1 for name/SKU/category/description.",
     "metric_policy": "Recall@5 and MRR are macro-averaged over answerable queries only. Zero-result accuracy is reported separately over gold-empty queries.",
     "synthetic_data": true,
     "scope": "Offline product retrieval on an entirely invented course-demo catalog. These numbers do not measure real shop search quality, LLM answer quality, database freshness, or production safety.",
     "labeling": "Relevant IDs were hand-labelled by reading the entirely invented 27-product course-demo fixture. All brands, names, prices, sizes and stock are fictional. Duplicate SKUs can refer to different product IDs.",
-    "split_policy": "10 development questions and20 fixed evaluation questions. Vocabulary and field weights are specified before this synthetic evaluation. Test cases are not used to tune weights, but the same author created fixture, questions and retriever, so this is not an independently blinded benchmark."
+    "split_policy": "10 development questions and20 fixed evaluation questions. Vocabulary and field weights are specified before this synthetic evaluation. Test cases are not used to tune weights, but the same author created fixture, questions and retriever, so this is not an independently blinded benchmark.",
+    "comparison_policy": "BM25 was added after inspection of the existing fixed questions and earlier results, using standard untuned parameters. This is a retrospective comparison on the same-author synthetic dataset, not a new blinded test. Raw lexical BM25 cannot translate English queries to Thai-only catalog fields; the enhanced method's bilingual vocabulary is part of its advantage."
   },
   "summary": {
     "dev": {
@@ -21,6 +23,14 @@
         "zero_result_queries": 2,
         "recall_at_5": 0.375,
         "mrr": 0.375,
+        "zero_result_accuracy": 1.0
+      },
+      "bm25": {
+        "queries": 10,
+        "answerable_queries": 8,
+        "zero_result_queries": 2,
+        "recall_at_5": 0.625,
+        "mrr": 0.625,
         "zero_result_accuracy": 1.0
       },
       "enhanced": {
@@ -41,6 +51,14 @@
         "mrr": 0.4117647058823529,
         "zero_result_accuracy": 1.0
       },
+      "bm25": {
+        "queries": 20,
+        "answerable_queries": 17,
+        "zero_result_queries": 3,
+        "recall_at_5": 0.49411764705882355,
+        "mrr": 0.5294117647058824,
+        "zero_result_accuracy": 1.0
+      },
       "enhanced": {
         "queries": 20,
         "answerable_queries": 17,
@@ -57,6 +75,14 @@
         "zero_result_queries": 5,
         "recall_at_5": 0.376,
         "mrr": 0.4,
+        "zero_result_accuracy": 1.0
+      },
+      "bm25": {
+        "queries": 30,
+        "answerable_queries": 25,
+        "zero_result_queries": 5,
+        "recall_at_5": 0.536,
+        "mrr": 0.56,
         "zero_result_accuracy": 1.0
       },
       "enhanced": {
@@ -96,6 +122,18 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          3,
+          8,
+          4,
+          17,
+          6
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -121,6 +159,16 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          20,
+          28,
+          25
+        ],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -141,6 +189,15 @@
         "zero_result_correct": null
       },
       "enhanced": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
         "retrieved_ids": [
           18,
           26
@@ -178,6 +235,15 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          16,
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -201,6 +267,15 @@
         "zero_result_correct": null
       },
       "enhanced": {
+        "retrieved_ids": [
+          3,
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
         "retrieved_ids": [
           3,
           4
@@ -232,6 +307,17 @@
         ],
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23
+        ],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
         "zero_result_correct": null
       }
     },
@@ -265,6 +351,12 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -286,6 +378,12 @@
         "recall_at_5": null,
         "reciprocal_rank": null,
         "zero_result_correct": true
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
       }
     },
     {
@@ -303,6 +401,12 @@
         "zero_result_correct": true
       },
       "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "bm25": {
         "retrieved_ids": [],
         "recall_at_5": null,
         "reciprocal_rank": null,
@@ -334,6 +438,18 @@
           3,
           8,
           4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          3,
+          4,
+          17,
+          6,
+          8
         ],
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
@@ -373,6 +489,16 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          11,
+          4,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -396,6 +522,15 @@
         "zero_result_correct": null
       },
       "enhanced": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
         "retrieved_ids": [
           18,
           26
@@ -433,6 +568,15 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          27,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -456,6 +600,18 @@
       "enhanced": {
         "retrieved_ids": [
           16
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          16,
+          17,
+          10,
+          6,
+          7
         ],
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
@@ -498,6 +654,17 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          3,
+          12,
+          8,
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -523,6 +690,17 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23
+        ],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -547,6 +725,16 @@
         ],
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          20,
+          28,
+          25
+        ],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
         "zero_result_correct": null
       }
     },
@@ -591,6 +779,17 @@
         "recall_at_5": 0.5,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23
+        ],
+        "recall_at_5": 0.4,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -615,6 +814,18 @@
         ],
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          21,
+          27,
+          26,
+          29,
+          24
+        ],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
         "zero_result_correct": null
       }
     },
@@ -645,6 +856,12 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -670,6 +887,12 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -693,6 +916,18 @@
         "retrieved_ids": [
           19,
           27
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          27,
+          21,
+          22,
+          18
         ],
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
@@ -733,6 +968,16 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          22,
+          18
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -762,6 +1007,12 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -786,6 +1037,16 @@
         "zero_result_correct": null
       },
       "enhanced": {
+        "retrieved_ids": [
+          19,
+          27,
+          18
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
         "retrieved_ids": [
           19,
           27,
@@ -821,6 +1082,12 @@
         "recall_at_5": 1.0,
         "reciprocal_rank": 1.0,
         "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
       }
     },
     {
@@ -838,6 +1105,12 @@
         "zero_result_correct": true
       },
       "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "bm25": {
         "retrieved_ids": [],
         "recall_at_5": null,
         "reciprocal_rank": null,
@@ -863,6 +1136,12 @@
         "recall_at_5": null,
         "reciprocal_rank": null,
         "zero_result_correct": true
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
       }
     },
     {
@@ -880,6 +1159,12 @@
         "zero_result_correct": true
       },
       "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "bm25": {
         "retrieved_ids": [],
         "recall_at_5": null,
         "reciprocal_rank": null,
@@ -907,6 +1192,12 @@
         "zero_result_correct": null
       },
       "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
         "retrieved_ids": [],
         "recall_at_5": 0.0,
         "reciprocal_rank": 0.0,
