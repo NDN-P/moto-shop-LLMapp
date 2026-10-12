@@ -12,23 +12,29 @@ For private shop use, `ASSISTANT_DATA_MODE=shop` reads `DATABASE_URL` through a 
 
 **Why use a small bilingual retriever and an allowlist of read-only tools?**
 
-“For a 27-product demonstration catalog, product names, SKUs, categories and sizes are useful explicit fields. I kept the original substring search as a baseline and added category, brand and size normalization with fixed ranking weights. This is small enough to inspect and evaluate without a vector database. The model can choose searches and aggregate lookups, but argument validation controls execution. There is no arbitrary SQL or stock-write tool.”
+“For a 27-product demonstration catalog, product names, SKUs, categories and sizes are useful explicit fields. I compare the original substring search with BM25 and with category, brand and size normalization using fixed ranking weights. This is small enough to inspect and evaluate without a vector database. The model can choose searches and aggregate lookups, but argument validation controls execution. There is no arbitrary SQL or stock-write tool.”
 
-Point to `assistant/catalog.py` for the baseline/enhanced branches and `assistant/agent.py` for the native tool schemas, limits and final validation. Explain that descriptions guide the model, while executable checks enforce the tool/data boundary. The adapter uses the OpenAI Python client with the exact class model, rather than treating a simulated response as a live answer. The protocol follows the [official function-calling documentation](https://developers.openai.com/api/docs/guides/function-calling).
+Point to `assistant/catalog.py` for the substring/enhanced branches, `assistant/evaluate.py` for BM25, and `assistant/agent.py` for the native tool schemas, limits and final validation. Explain that descriptions guide the model, while executable checks enforce the tool/data boundary. The adapter uses the OpenAI Python client with the exact class model, rather than treating a simulated response as a live answer. The protocol follows the [official function-calling documentation](https://developers.openai.com/api/docs/guides/function-calling).
 
 ## One evaluation number to explain
 
-“On my 20-question synthetic evaluation split, Recall@5 increased from 37.6% to 91.2%. This is the average fraction of relevant labeled products present in the first five retrieval results, calculated over 17 answerable questions. It measures catalog retrieval, not generated-answer accuracy. Three no-match questions are scored separately.”
+“On my 20-question synthetic evaluation split, Recall@5 is 37.6% for whole-query substring search, 49.4% for BM25 and 91.2% for the bilingual enhanced method. This is the average fraction of relevant labeled products present in the first five retrieval results, calculated over 17 answerable questions. It measures catalog retrieval, not generated-answer accuracy. Three no-match questions are scored separately.”
 
-Show `assistant/data/evaluation_results.json`, then an individual question's `relevant_ids` and `retrieved_ids`. The dataset has 10 development and 20 evaluation questions, with labels authored alongside the invented catalog. Acknowledge that the benchmark is not independently blinded. If asked about MRR, explain the reciprocal rank of the first relevant result; the evaluation-split mean increased from 41.2% to 94.1%.
+Show `assistant/data/evaluation_results.json`, then an individual question's `relevant_ids` and `retrieved_ids`. The dataset has 10 development and 20 evaluation questions, with labels authored alongside the invented catalog. Acknowledge that the benchmark is not independently blinded. If asked about MRR, explain the reciprocal rank of the first relevant result; evaluation-split MRR is 41.2% for substring search, 52.9% for BM25 and 94.1% for enhanced retrieval.
 
 Keep T20 visible as a failure: “cheapest engine oil” is outside the current comparison grammar and retrieves nothing. Do not claim all questions work or that retrieval percentages equal LLM answer accuracy.
+
+**Why add BM25?** Whole-query name/SKU substring matching is weak for English queries against Thai names. BM25 provides a stronger lexical comparison using `k1=1.2` and `b=0.75`, NFKC normalization and case folding, with Thai tokens preserved. It searches name, SKU, category and description with equal treatment and shares the structured filters. It has no translation or alias expansion. This is a retrospective comparison on the same self-authored benchmark, not an independently blinded experiment or a tuned BM25 result. Read its actual result from the generated evaluation file.
+
+**Why does T08 only score 0.5?** Ten products are labelled relevant, but Recall@5 keeps at most five results. Returning five relevant products gives `5 / 10 = 0.5`, which is the metric's ceiling for that question. Check the retrieved IDs before calling it a search miss. The macro average includes this ceiling; it has not been normalized away.
 
 ## Demonstrate a new sample input
 
 Use a question the examiner chooses about the invented catalog. For a concrete product, try “What is the sample price and stock for SKU SM-S06?” The current fixture contains sample part ID 6 for that SKU. For a supported aggregate, try “Which parts are low on stock?” or “What are our inventory totals?” For a negative case, ask about sample part ID 9999, which is absent from the current fixture.
 
 Wait for the actual result. Open its source table and lookup details. Compare IDs and values with the returned sample records. If the model returns a fallback or connection error, explain that observed outcome and inspect the trace; do not present a stored answer as a successful new run.
+
+Use a complete question each time: chat requests are independent and do not carry previous turns as context. Fixed vocabulary cannot cover every paraphrase. For “cheapest” requests, explain that price sorting/comparison is unsupported rather than guessing. For “under X baht”, distinguish the existing `max_price` tool filter from the model's ability to select it and complete a grounded answer; the retained under-150-baht run retrieved products but then fell back.
 
 The retained six-question synthetic smoke run produced four non-fallback answers. The broad motor-oil price request fell back despite successful retrieval, and the injection request fell back without tools. This is a completion observation on six sample inputs, not a measured answer-accuracy rate or a real-inventory validation.
 
@@ -60,8 +66,8 @@ $env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant/live_evaluate.py
 ```
 
-Sample mode requires a clearly marked synthetic fixture. Shop mode is an explicit opt-in through trusted server configuration; the browser and CLI question payload cannot choose a database path. The updated version passed 116 tests, clean-install CI and two authorized live shop checks. Those two checks verified product values and totals; they do not establish general answer accuracy. Keep `.env`, API keys, real database files and supplier/customer records outside the submitted material.
+Sample mode requires a clearly marked synthetic fixture. Shop mode is an explicit opt-in through trusted server configuration; the browser and CLI question payload cannot choose a database path. The application has 118 tests, recorded clean-install CI and two authorized live shop checks. Those two checks verified product values and totals; they do not establish general answer accuracy. Keep `.env`, API keys, real database files and supplier/customer records outside the submitted material.
 
 ## If asked what is unfinished
 
-“Browser visual review was blocked by the saved access permission, so I cannot claim that rendered layout and interactions were visually verified. The model can still fail after a correct lookup. Comparative search and motorcycle fitment are incomplete. I kept those failures in the evidence and bounded execution rather than promising perfect answers.”
+“The model can fail after a correct lookup, and valid source IDs do not prove every sentence is correct. Comparative search and verified motorcycle fitment are incomplete. The benchmark measures retrieval on invented data; it does not score generated final answers. Next I would add independent questions, labelled final-answer checks and verified fitment data, then test with shop staff.”

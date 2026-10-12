@@ -46,7 +46,7 @@ Screen: show the trace, then the fitment disclosure. Optionally point to the age
 
 Screen: show the freshly generated evaluation summary and one question with its expected and retrieved IDs. Keep actual values visible; do not replace them with estimates.
 
-> This evaluation compares the original name and SKU substring search with the improved bilingual retrieval. Both run on the same invented catalog and labeled questions. The report includes Recall at five, reciprocal rank, and a separate measure for questions with no relevant products. I show the measured results from this run. I inspect individual retrieved IDs as well as averages, because a good average can hide important failures. These are deterministic retrieval measurements; they do not establish the quality of generated answers or production reliability.
+> This evaluation compares the original name and SKU substring search, BM25, and the improved bilingual retrieval. All run on the same invented catalog and labeled questions. The report includes Recall at five, reciprocal rank, and a separate measure for questions with no relevant products. I show the measured results from this run. I inspect individual retrieved IDs as well as averages, because a good average can hide important failures. These are deterministic retrieval measurements; they do not establish the quality of generated answers or production reliability.
 
 ## 3:30–3:55 — Limitations and result
 
@@ -61,3 +61,10 @@ Screen: show the actual configuration, connection error, or bounded fallback. Ke
 > This run shows an assistant connection or response failure, so it does not demonstrate a completed model answer. The interface reports the failure instead of presenting an invented result. This recording stays in sample mode with the invented catalog. I can inspect and test the lookup functions locally, but a successful live model run is still needed to verify the full function-calling loop. The evaluation I show next measures deterministic retrieval only. It provides evidence about catalog matching, separately from model behavior.
 
 With this replacement, show the agent guardrails in the editor at 2:20 rather than claiming that a successful lookup trace was produced. Describe the exact observed error if asked; configuration failure, a proxy error and a bounded model fallback are different outcomes.
+
+## Questions to practise before the defense
+
+- Explain T08's metric ceiling: ten relevant products and five returned results make its maximum Recall@5 `5/10 = 0.5`.
+- Ask a fresh, complete product question, inspect its trace and compare the actual values with source records. Questions are independent, so a follow-up such as “what about that one?” has no previous-turn context.
+- Show the retained “cheapest engine oil” comparison failure. Explain that a `max_price` tool filter exists but the “under 150 baht” smoke request still fell back after a successful lookup.
+- Say explicitly that four completed answers out of six smoke inputs is an observed completion count, not answer accuracy; the offline benchmark measures search only.

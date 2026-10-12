@@ -1,88 +1,60 @@
 # MotoShop AI
 
-A local motorcycle-parts manager with a read-only assistant. The shop screens use a local SQLite database. The shared configuration defaults to an **invented demonstration catalog** in `assistant/data/catalog.json`, containing 27 fictional products. An optional shop mode reads the configured inventory database and sends selected product evidence to the class proxy. Questions you type are sent to the proxy in either mode.
+A local motorcycle-parts manager with a read-only LLM assistant. React and Express/tRPC serve the shop screens; SQLite stores inventory. Python's `OpenAI` client calls the course proxy with `gemma-4-E4B-it`. The assistant can search parts, look up a product, list low stock and report inventory totals, with source records visible beside each answer.
 
-The assistant uses Python's `OpenAI` client, the class proxy, and `gemma-4-E4B-it`. It can search products, look up a product ID, list low stock, and report inventory totals. It cannot change stock, place orders, run arbitrary SQL, or verify motorcycle compatibility.
+## Quick start on Windows
 
-## Install on Windows
+Install **Node.js 22.12+ with npm** and **Python 3.10+**. Open PowerShell in this folder, which contains `package.json`.
 
-Use Node.js 22.12 or newer with npm, and Python 3.10 or newer. This workspace was checked with Node.js 24.19.0 and Python 3.12.14. Open PowerShell in the application folder containing `package.json`.
+1. Install dependencies and create local configuration:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
-```
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+   notepad .env
+   ```
 
-The script creates `.venv` when needed, installs `openai==3.28.0`, runs `npm ci` from `package-lock.json`, and copies `.env.example` only when `.env` is absent. It keeps existing configuration. If Python is not available as `python`, pass its executable path with `-PythonExecutable`.
+2. In `.env`, set `ADMIN_USERNAME`, a strong `ADMIN_PASSWORD` and your course `OPENAI_API_KEY`. Keep `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`. Never commit this file or show its contents in a recording.
 
-The existing workspace dependencies were used for local checks. A fresh `npm ci` installation has not been verified here; this machine's bundled Node runtime does not include npm. Install the standard Node.js distribution with npm for the setup command above.
+3. Create the invented demonstration database once, then launch:
 
-To check prerequisites without installing or changing configuration:
+   ```powershell
+   .\.venv\Scripts\python.exe scripts\seed-demo.py
+   $env:ASSISTANT_DATA_MODE = 'sample'
+   $env:DATABASE_URL = 'file:./demo.db'
+   npm run dev
+   ```
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1 -Check
-```
+4. Open the URL printed by the server, normally `http://127.0.0.1:3000`, and sign in with the credentials from step 2. Open **Shop assistant**, confirm **Sample catalog**, and ask “Which parts are low on stock?” or “What are our inventory totals?”. Expand the lookup details and compare the answer with its sources.
 
-Edit `.env` locally. Set `ADMIN_USERNAME`, a strong `ADMIN_PASSWORD`, and your course `OPENAI_API_KEY`. The shared example uses `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`, `ASSISTANT_DATA_MODE=sample`, and `DATABASE_URL=file:./demo.db`. Login remains required for the shop screens, assistant, data changes and uploaded photos. Keep `.env` private; never paste credentials into screenshots, reports, or Git commits.
+`setup.ps1` creates `.venv`, installs pinned Python dependencies, runs `npm ci` and preserves any existing `.env`. If Python is not on `PATH`, pass `-PythonExecutable` with its full path. Use `setup.ps1 -Check` to check prerequisites without installation. CI verifies a fresh dependency installation, tests, build and evaluation.
 
-Choose the assistant's data source explicitly:
+The seed refuses existing files and `moto-shop.db`. If `demo.db` already exists, skip seeding it; for a separate new demo, run `scripts\seed-demo.py demo-second.db` and set `DATABASE_URL=file:./demo-second.db`. Demo balances are opening stock, not sales history. Stop the server with Ctrl+C; close the PowerShell session to clear the sample-mode overrides.
 
-- `ASSISTANT_DATA_MODE=sample` reads the fictional JSON fixture. Database edits do not change these assistant results. This is the default for a fresh setup, the evaluation and the course demonstration.
-- `ASSISTANT_DATA_MODE=shop` opts in to read-only access to the local inventory selected by `DATABASE_URL`. Questions and selected product fields (`id`, `name`, `sku`, `category`, `price`, `stock`, `minStock`), or inventory totals returned by a tool, go to the course proxy. Product descriptions, supplier details, photos and stock-movement history are excluded. Shop mode requires the approved `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`; surrounding whitespace and a trailing slash are accepted. Other endpoints are rejected before networking. This mode uses real shop data and should be enabled only when that disclosure is intended.
+## Data modes and privacy
 
-The owner's private local configuration uses shop mode. It is not copied into the repository. Sample mode retains a configurable proxy endpoint. Neither mode can change stock through the assistant, and neither establishes motorcycle compatibility. Do not paste credentials, contacts or unrelated private information into questions: free text is sent as entered.
+The shared configuration defaults to 27 **invented products** in `assistant/data/catalog.json` and the separate demo database. Choose the assistant source in trusted server configuration:
 
-Create a new demonstration database before starting the app:
+| Mode | Data read by the assistant | Data sent to the course proxy |
+|---|---|---|
+| `ASSISTANT_DATA_MODE=sample` | Fixed fictional JSON catalog; inventory-screen edits do not change it | Typed question and matching sample tool evidence |
+| `ASSISTANT_DATA_MODE=shop` | Current inventory selected by `DATABASE_URL`, opened read-only | Typed question and selected product fields or computed inventory totals |
 
-```powershell
-.\.venv\Scripts\python.exe scripts\seed-demo.py
-```
+Shop evidence contains only `id`, `name`, `sku`, `category`, `price`, `stock` and `minStock`. Descriptions, supplier contacts, photos and stock-movement history are excluded. Shop mode permits only `https://llm.nat-d.uk/v1` (surrounding whitespace and a trailing slash are accepted). Sample mode allows a configured endpoint. Enable shop mode only when disclosure of those records is intended; free-text questions are sent as entered in both modes.
 
-This creates **new** `demo.db` with the fictional product IDs and opening balances. Suppliers, users, stock movements, and warehouse storage start empty. Photos and private shop data are not copied. The seed refuses every existing output file and refuses the name `moto-shop.db`. If a demo file already exists, choose a fresh name and set `DATABASE_URL` to that file:
+Login protects shop screens, the assistant, mutations and uploaded photos. The browser cannot choose a database path. The assistant cannot change stock, place orders, run arbitrary SQL or establish motorcycle compatibility. Preserve existing shop databases together with their WAL files; the demo seed must never replace them. Keep `.env`, private databases, photos and contacts outside submitted material.
 
-```powershell
-.\.venv\Scripts\python.exe scripts\seed-demo.py demo-second.db
-```
-
-Existing users with a private shop database can keep their current `DATABASE_URL`. In sample mode, assistant IDs and quantities may differ from those inventory screens; in shop mode, lookups use that database through a read-only connection. Preserve private SQLite database files together with their WAL data; do not replace them with the demo.
-
-For a reproducible course recording, explicitly override both settings in the PowerShell session before starting the app, even if the private `.env` uses shop mode:
-
-```powershell
-$env:ASSISTANT_DATA_MODE = 'sample'
-$env:DATABASE_URL = 'file:./demo.db'
-powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
-```
-
-Check that Assistant shows **Sample catalog** before recording. The seeded demo database initially matches the assistant's separate fictional fixture. Close this PowerShell session after recording so later private-shop sessions use their own configuration.
-
-The application's final folder is `LLMAPP/moto-shop`. Private backups, when present in this workspace, are outside it at `../Project/private_backup`. Keep that folder private and separate from the course repository; the setup and seed scripts do not use it.
-
-## Run
+## Run and build
 
 ```powershell
 npm run dev
-```
-
-If dependencies are already installed but npm is unavailable, use the PowerShell launcher with Node on `PATH`:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
-```
-
-This starts the existing development entry point without a watch process. It does not install dependencies or create configuration.
-
-Open the localhost URL printed by the server, normally `http://localhost:3000`, and sign in with your locally configured credentials. Open **Shop assistant** and try “Which parts are low on stock?” or “What are our inventory totals?”. The source table and lookup details show the evidence returned by tools.
-
-For a production build:
-
-```powershell
+# Or build and start the production bundle:
 npm run build
 npm start
 ```
 
-After a production build exists, `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1 -Production` also starts it without npm.
+With dependencies installed and Node on `PATH`, `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1` starts the development server without npm or a watcher. Add `-Production` to run an existing production build.
 
-The default `HOST=127.0.0.1` allows access from this computer. For an iPad on a trusted Wi-Fi network, explicitly change `HOST=0.0.0.0` in `.env`, restart the app, allow the chosen port through the local firewall, and use the computer's LAN address. The printed iPad URL is reachable only when the server is bound to that network interface.
+The default `HOST=127.0.0.1` accepts connections from this computer. For an iPad on trusted Wi-Fi, set `HOST=0.0.0.0`, restart, allow the selected port through the firewall and open the computer's LAN address. This local app needs deployment hardening before public hosting.
 
 ## Verify and reproduce the evaluation
 
@@ -95,44 +67,34 @@ npm run build
 .\.venv\Scripts\python.exe assistant\evaluate.py
 ```
 
-The JavaScript database tests use in-memory SQLite and temporary files. The seed tests create only temporary demo databases. Offline Python tests and retrieval evaluation do not call the model.
+Offline tests and retrieval evaluation make no model calls and use synthetic or temporary data. The evaluation compares name/SKU substring search, BM25 and bilingual category/brand/size retrieval on the same 27 invented products and fixed labels: 10 development questions and 20 evaluation questions. Test Recall@5 is 37.6%, 49.4% and 91.2% respectively. Results include MRR over answerable questions and zero-result accuracy for no-match questions. The script writes per-question results and input hashes to `assistant/data/evaluation_results.json`.
 
-The evaluation compares a name/SKU substring baseline with bilingual category, brand, and size normalization plus token matching and fixed ranking weights. Both methods receive the same structured category, price, and stock filters. The committed labels separate development and test questions. Results include Recall@5 and MRR over answerable questions, and zero-result accuracy over questions with no relevant product. Run the command to regenerate `assistant/data/evaluation_results.json`, including per-question results and input hashes.
+These are **retrieval scores on a small, self-authored synthetic benchmark**, not final-answer accuracy. For T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) and [defense notes](docs/defense.md) for retained failures and the baseline comparison.
 
-These numbers measure **offline product retrieval on the fictional corpus**. They do not establish live model answer accuracy, private-stock freshness, or production safety. Inspect failure cases and keep that distinction in the report.
-
-An optional proxy smoke run uses the invented sample catalog and demonstration questions. It requires valid local proxy settings and consumes model calls. Set sample mode explicitly; this is separate from validating shop mode:
+An optional model smoke check requires valid proxy settings and consumes model calls:
 
 ```powershell
 $env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant\live_evaluate.py --limit 1
 ```
 
-Review the resulting `assistant/data/live_results.json` before describing any live result. Successful offline checks do not imply that the course API has been verified.
+This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The retained six-question sample run completed four answers and produced two bounded fallbacks. Two separate shop-mode integration checks matched product values and inventory totals without changing business records. Neither observation estimates general model accuracy.
 
-## Course capability coverage
+## Course capabilities
 
-- **Structured output:** JSON answer/source schema validation and validation of tool arguments across the Python and TypeScript boundary.
-- **Agent with tools:** native function calls, allow-listed read-only lookups, matching tool-result messages, repeated-call blocking, turn/call limits, and a stop condition.
-- **Retrieval evaluation:** committed labelled questions, a named baseline, reproducible quantitative results, and per-question failures.
-- **Served interface:** React UI, authenticated Express/tRPC endpoints, and a bounded Python subprocess.
+- **Structured output:** validated JSON answer/source schema and tool arguments.
+- **Agent with tools:** native function calls, four allow-listed read-only lookups, repeated-call blocking, four model turns and six tool-call limits.
+- **Retrieval evaluation:** labelled development/evaluation questions, baseline comparisons, reproducible metrics and per-question failures.
+- **Served interface:** React UI, authenticated Express/tRPC endpoints and a bounded Python subprocess.
 
-This project uses lexical retrieval; it does not claim an embedding/vector RAG pipeline or a streaming answer UI. Citation checks verify that source IDs occurred in successful tool evidence; they cannot prove every sentence is factually correct.
+## Limitations & next steps
 
-The course hand-in additionally requires a public GitHub repository URL, a 4–8 page PDF report, and a 3–6 minute recorded demonstration or working live URL. Show a real success and an honest failure, explain a design choice, and defend an evaluation number. Setup does not publish a repository or create those external URLs.
+The vocabulary is finite; unseen paraphrases and comparative requests such as “cheapest engine oil” can fail. A maximum-price tool filter exists, but the retained “under 150 baht” model run fell back after a successful lookup. Each chat question is independent. Source-ID validation checks the cited evidence, not every sentence's correctness. Fitment data is unverified, and slow or unavailable proxy calls can cause errors or a fallback.
 
-## Local-use limits
+Next steps are to test independent questions and final answers, add verified fitment and comparison handling, and evaluate with shop staff. Sessions currently live in one server process and reset on restart; public hosting would also need HTTPS, request limits and durable sessions.
 
-Sessions are held in one server process and disappear after restart. This is a single-instance, local application. Public hosting requires appropriate HTTPS, request limits, durable session handling, and deployment configuration. Keep private databases, photos, contacts, `.env`, and local generated artifacts out of a public submission.
+## Hand-in files
 
-Prices are in THB. Initial balances are not sales history. The fictional catalog is small, and missing products or compatibility claims should lead to clarification rather than invented advice. The assistant has a finite process timeout; slow or unavailable proxy calls produce an error or a safe fallback.
+See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; recording, proposal, verification and defense guides are in `docs/`. `output/demo/narration-guide.mp3` is an optional narration guide, not a screen recording. Rebuild the PDF with `python scripts/build_report.py` after installing optional `requirements-report.txt` dependencies and supplying both [genuine app screenshots](docs/screenshots/README.md).
 
-## Prepared hand-in files
-
-See [SUBMISSION.md](SUBMISSION.md) for the three course deliverables and their status. The six-page report is in `output/pdf/`; the recording script, proposal, measured verification results and defense notes are in `docs/`. Optional English narration is `output/demo/narration-guide.mp3` (about four minutes), a guide rather than a recorded demonstration.
-
-To rebuild the PDF, install the optional `requirements-report.txt` dependencies and run `python scripts/build_report.py`. These document dependencies are not needed to run the app.
-
-All 116 local application tests pass, together with TypeScript and the production build. Two owner-authorized live shop-mode checks returned product price/stock and inventory totals matching the real database, without changing business records. The retained synthetic smoke run produced four completed answers and two bounded fallbacks; it measures a separate sample workflow. GitHub CI repeats installation, tests, build and evaluation on every push. See `docs/verification.md` for scope and results. Browser appearance was not visually verified because a saved access rule blocked it.
-
-The owner chose to keep the repository private and record Q3 personally. The course's public-repository requirement and video URL remain pending. No course form has been submitted.
+The course requires a public repository URL, a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.

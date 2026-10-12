@@ -1,22 +1,22 @@
 # Capstone hand-in
 
-The application lives in `LLMAPP/moto-shop` with one folder level. Its visible brand is `shop-name`. All 116 app tests, TypeScript and production build pass. Two authorized live shop-mode requests returned answers and evidence matching the real database, with no business records changed. The saved synthetic benchmark and six-case model smoke report remain separate from these real-inventory checks.
+The application lives in `LLMAPP/moto-shop` with one folder level. Its visible brand is `shop-name`. All 118 local tests, TypeScript and production-build checks passed on 12 October 2026. Two earlier live shop-mode requests returned answers and evidence matching the real database, with no business records changed. The saved synthetic benchmark and six-case model smoke report remain separate from these real-inventory checks.
 
 ## Q1 - Repository
 
 https://github.com/NDN-P/moto-shop-LLMapp
 
-The repository contains code, setup instructions, 27 invented products, 30 relevance labels, evaluation scripts/results and tests. Clean-install CI passed for the shop-mode and cleanup source commit `7792ede`. The repository remains **private**, as requested. The course explicitly requires a public repository, so Q1 does not meet that requirement while it stays private. Do not assume that an instructor can open a private link.
+The repository contains code, setup instructions, 27 invented products, 30 relevance labels, evaluation scripts/results and tests. CI checks a fresh dependency installation, tests, build and evaluation. The course requires a public repository: verify that this link opens without signing in before submitting Q1.
 
 ## Q2 - PDF report
 
-Upload `output/pdf/moto-shop-capstone-report.pdf` (6 pages).
+Upload `output/pdf/moto-shop-capstone-report.pdf`. The required length is 4–8 pages.
 
-It covers the intended users and problem, architecture diagram and technique choices, labelled evaluation and baseline, measured improvement, live integration observations, failures and limitations.
+The report source covers the intended users and problem, architecture diagram and technique choices, page screenshots, labelled evaluation and baselines, measured improvement, live integration observations, failures, and limitations and next steps. It identifies Natdanai Phurintanachot, student ID 67070230. The committed PDF (7 pages) was built on 12 October 2026 with both genuine sample-app screenshots in `docs/screenshots/`. To rebuild it, see the [screenshot instructions](docs/screenshots/README.md); the builder refuses missing images instead of silently omitting them.
 
 ## Q3 - Your recording
 
-You chose to record the demonstration yourself. Follow `docs/demo-script.md` for a 3-4 minute walkthrough, then upload the recording to unlisted YouTube or a viewable Drive link and submit that URL. A script or narration audio by itself is not a screen recording.
+Follow `docs/demo-script.md` for a 3–4 minute walkthrough, then upload the recording to unlisted YouTube or a viewable Drive link and submit that URL. The course accepts a 3–6 minute recording or working live URL. A script or narration audio by itself is not a screen recording.
 
 The optional `output/demo/narration-guide.mp3` is an English guide lasting about four minutes. Use it only when your actual displayed outcomes match the narration; otherwise read the failure replacement from the script. Do not submit the audio file as Q3.
 
@@ -34,6 +34,6 @@ Use the URL printed by the launcher and confirm the **Sample catalog** badge; a 
 
 ## Before the in-person defense
 
-Read `docs/defense.md`. Be able to explain why a read-only tool agent suits structured stock data, what the 91.2% test Recall@5 means, and why it does not mean 91.2% answer accuracy. Run a new complete sample question, inspect its tool trace and show a retained failure honestly.
+Read `docs/defense.md`. Explain why read-only tools suit structured stock data, compare the retrieval baselines, and distinguish Recall@5 from generated-answer accuracy. For T08, explain why ten relevant products make the top-five recall ceiling 0.5. Run a new complete sample question, inspect its tool trace and show a retained failure honestly.
 
-No course form has been submitted by the assistant.
+Before submitting, verify the repository and recording links from a signed-out browser and upload the final PDF through the course form.
