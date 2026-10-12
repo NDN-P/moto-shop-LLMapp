@@ -34,9 +34,9 @@ Use a question the examiner chooses about the invented catalog. For a concrete p
 
 Wait for the actual result. Open its source table and lookup details. Compare IDs and values with the returned sample records. If the model returns a fallback or connection error, explain that observed outcome and inspect the trace; do not present a stored answer as a successful new run.
 
-Use a complete question each time: chat requests are independent and do not carry previous turns as context. Fixed vocabulary cannot cover every paraphrase. For “cheapest” requests, explain that price sorting/comparison is unsupported rather than guessing. For “under X baht”, distinguish the existing `max_price` tool filter from the model's ability to select it and complete a grounded answer; the retained under-150-baht run retrieved products but then fell back.
+Use a complete question each time: chat requests are independent and do not carry previous turns as context. Fixed vocabulary cannot cover every paraphrase. For “cheapest” requests, explain that price sorting is unsupported: the live answer to “What is the cheapest engine oil?” cites part 10 at 61 THB, but part 11 at 59 THB is cheaper, because the model asked for one name-ordered result. The citation is valid, yet the answer is wrong. “Under X baht” works through the `max_price` filter.
 
-The retained six-question synthetic smoke run produced four non-fallback answers. The broad motor-oil price request fell back despite successful retrieval, and the injection request fell back without tools. This is a completion observation on six sample inputs, not a measured answer-accuracy rate or a real-inventory validation.
+The current six-question synthetic smoke run produced five non-fallback answers; the injection request fell back without tools. Earlier runs fell back on correct answers because the model wrapped its JSON in a markdown fence; the agent now extracts the fenced object before the same strict validation. This is a completion observation on six sample inputs, not a measured answer-accuracy rate or a real-inventory validation.
 
 ## Reproduce checks
 
@@ -66,7 +66,7 @@ $env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant/live_evaluate.py
 ```
 
-Sample mode requires a clearly marked synthetic fixture. Shop mode is an explicit opt-in through trusted server configuration; the browser and CLI question payload cannot choose a database path. The application has 118 tests, recorded clean-install CI and two authorized live shop checks. Those two checks verified product values and totals; they do not establish general answer accuracy. Keep `.env`, API keys, real database files and supplier/customer records outside the submitted material.
+Sample mode requires a clearly marked synthetic fixture. Shop mode is an explicit opt-in through trusted server configuration; the browser and CLI question payload cannot choose a database path. The application has 120 tests, recorded clean-install CI and two authorized live shop checks. Those two checks verified product values and totals; they do not establish general answer accuracy. Keep `.env`, API keys, real database files and supplier/customer records outside the submitted material.
 
 ## If asked what is unfinished
 

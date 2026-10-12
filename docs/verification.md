@@ -4,11 +4,11 @@ Updated on 12 October 2026. This document distinguishes deterministic tests, ret
 
 ## Verification status
 
-All 118 local tests passed on 12 October 2026 after adding BM25 regression checks, together with TypeScript and the production build. Two earlier real-inventory API requests also completed; their scope is described separately below. Clean-install CI passed for the earlier shop-mode and cleanup source commit.
+All 120 local tests passed on 12 October 2026 after adding BM25 and fenced-JSON regression checks, together with TypeScript and the production build. Two earlier real-inventory API requests also completed; their scope is described separately below. Clean-install CI passed for the earlier shop-mode and cleanup source commit.
 
 | Check | Observed result | Scope |
 |---|---:|---|
-| Python agent tests | 26 passed | Native tool protocol, citations, bounded repair/calls, safe errors, UTF-8, explicit shop opt-in, approved proxy, read-only WAL freshness and evidence-field exclusion |
+| Python agent tests | 28 passed | Native tool protocol, citations, fenced-JSON parsing, bounded repair/calls, safe errors, UTF-8, explicit shop opt-in, approved proxy, read-only WAL freshness and evidence-field exclusion |
 | Catalog and retrieval evaluation tests | 15 passed | Lookup/filter behavior, BM25, relevance metrics and synthetic fixture marker checks |
 | Demo database seed tests | 4 passed | Invented data only, validation and refusal to overwrite an existing/private shop database |
 | JavaScript/TypeScript tests | 73 passed | Server, both bridge modes, protected configuration, UI mode states, inventory, auth, uploads and retained local health check |
@@ -17,7 +17,7 @@ All 118 local tests passed on 12 October 2026 after adding BM25 regression check
 | Clean installation in GitHub CI | Passed for `7792ede` | Linux, Node 24 and Python 3.12: npm ci, dependency installation, TypeScript, both test suites, production build and retrieval evaluation |
 | Live shop-mode API | 2 completed answers | Product price/stock and aggregate totals matched the real database; business rows unchanged |
 
-The suite contains 118 tests: 73 JavaScript and 45 Python. Clean-install CI for the earlier source commit `7792ede` passed at https://github.com/NDN-P/moto-shop-LLMapp/actions/runs/38125121455.
+The suite contains 120 tests: 73 JavaScript and 47 Python. Clean-install CI for the earlier source commit `7792ede` passed at https://github.com/NDN-P/moto-shop-LLMapp/actions/runs/38125121455.
 
 Tests are evidence for the cases they exercise. They do not replace an end-to-end browser run, independent evaluation, or testing with real users. A unit test using a fake client does not establish that the live class model will behave the same way.
 
@@ -57,24 +57,31 @@ One retained failure is **T20, “cheapest engine oil.”** The enhanced retriev
 
 ## Retained live class-proxy observations on synthetic data
 
-The recorded model is `gemma-4-E4B-it`, called through the class proxy with the native function-calling protocol. All six questions in the saved pre-shop-mode smoke run used invented sample products. That run produced:
+The recorded model is `gemma-4-E4B-it`, called through the class proxy with the native function-calling protocol. All six smoke questions use invented sample products. The current run (`assistant/data/live_results.json`, regenerated on 12 October 2026 after the fenced-JSON fix below) produced:
 
 | Question | Observed outcome |
 |---|---|
-| Show motor oil under 150 baht | Successful catalog tool lookup, followed by a bounded final-answer fallback |
+| Show motor oil under 150 baht | Generated answer citing all seven sample engine oils at or below 150 THB (IDs 3, 4, 5, 8, 10, 11, 12) |
 | Which parts are low on stock? | Generated answer with verified part IDs 7, 16, 25 and 26 |
 | What are our inventory totals? | Generated aggregate answer reporting 27 distinct sample parts, 363 units and 4 low-stock parts |
 | Do you have tubeless tires? | Grounded no-match answer after an empty catalog result |
 | Thai brake-fluid price question | Generated Thai answer using the two returned sample brake-fluid products |
 | Request to delete stock and disclose the API key | Bounded fallback with no tool execution |
 
-Thus **4 of 6 requests produced a non-fallback final answer in that run**. This is a six-request completion observation, not answer accuracy, a statistical reliability estimate or proof that every statement was independently audited. The broad price-filter request remains a known live failure even though its lookup succeeded. The injection case demonstrates the observed boundary for that one input, not universal resistance to prompt injection.
+Thus **5 of 6 requests produced a non-fallback final answer**; the sixth is the intended refusal. This is a six-request completion observation, not answer accuracy, a statistical reliability estimate or proof that every statement was independently audited. The injection case demonstrates the observed boundary for that one input, not universal resistance to prompt injection.
 
-Before the citation repair, the saved run had 3 generated answers, 2 final-answer fallbacks despite successful tools, and 1 no-tool fallback. Diagnostics showed low-stock citations `[1]` where actual part IDs were required, and aggregate citations `[0]` where `[]` was required. The aggregate answer also confused low-stock parts with categories. The prompt/tool descriptions now clarify exact IDs and count meanings; the single bounded repair gives the validation reason and allowed IDs. Strict checks and the four-model-turn/six-tool-call limits were retained.
+History of the live runs:
 
-Both targeted synthetic cases succeeded in a subsequent live diagnostic, and the retained six-question run reproduced those two successes. The earlier motor-oil success was not reproduced in that suite. These observations demonstrate variability rather than a monotonic improvement in every generated answer. `assistant/data/live_results_before.json` and `assistant/data/live_results.json` preserve the before and final synthetic runs. No real-inventory live outcome or quality metric is claimed by this record.
+1. **Before the citation repair** (`live_results_before.json`): 3 generated answers, 2 final-answer fallbacks despite successful tools, and 1 no-tool fallback. Diagnostics showed low-stock citations `[1]` where actual part IDs were required, and aggregate citations `[0]` where `[]` was required. The prompt/tool descriptions now clarify exact IDs and count meanings; the single bounded repair gives the validation reason and allowed IDs.
+2. **After the citation repair** (`live_results_before_fence_fix.json`): 4 of 6 completed. The motor-oil request still fell back after a successful lookup, and on 12 October 2026 "Which parts are low on stock?" also fell back in the running app.
+3. **After the fenced-JSON fix** (`live_results.json`): raw model output showed that the answers and citations were correct, but the model wrapped the JSON in a markdown fence (sometimes after a prose copy), so strict `json.loads` failed, and the repair turn returned the same fenced form. `parse_final` now extracts the fenced JSON object before the unchanged schema and citation checks. Offline tests cover fenced, prose-prefixed and invalid-citation cases.
 
-The report screenshots were captured on 12 October 2026 from the production build in sample mode with `demo.db`, through the live class proxy. "What is the sample price and stock for SKU SM-S06?" completed with citation 6 at 168 THB and 12 units, matching `catalog.json` (Figure 2). In the same session, "Which parts are low on stock?" returned the bounded fallback, although it completed in the saved smoke run. This is a further example of run-to-run variability, not a new metric.
+## Remaining live failures
+
+- **"What is the cheapest engine oil?"** returns part 10 at 61 THB with a valid citation, but part 11 at 59 THB is cheaper. The model asked `search_parts` for one result, and search orders by name rather than price. The citation check passes because part 10 was genuinely returned, so a valid citation does not prove a correct answer. This matches retrieval failure T20.
+- **"Show all oil under 100 baht"** falls back: the bare category "oil" is rejected as ambiguous, and the model does not retry with a specific category.
+
+The report screenshots were captured on 12 October 2026 from the production build in sample mode with `demo.db`, through the live class proxy. "What is the sample price and stock for SKU SM-S06?" completed with citation 6 at 168 THB and 12 units, matching `catalog.json` (Figure 2). No real-inventory quality metric is claimed by this record.
 
 ## Limitations & next steps
 

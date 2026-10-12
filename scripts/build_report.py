@@ -167,7 +167,7 @@ def main():
             return "Bounded fallback after tools" if row.get("trace") else "Bounded fallback without tools"
         return "Completed answer: " + ", ".join(entry["tool"] for entry in row.get("trace", []))
     completed = [row for row in rows if outcome(row).startswith("Completed answer")]
-    p(f"The saved synthetic smoke artifact contains {len(rows)} requests: {len(completed)} completed answers and {len(rows)-len(completed)} errors or bounded fallbacks. A trace alone does not count as a completed answer. Results and timings are in assistant/data/live_results.json. Two additional owner-authorized shop-mode checks completed with answers and evidence matching the real database; business records were unchanged and raw outputs remain local. Neither check is a general answer-quality score.")
+    p(f"The saved synthetic smoke artifact contains {len(rows)} requests: {len(completed)} completed answers and {len(rows)-len(completed)} {'error or bounded fallback' if len(rows)-len(completed) == 1 else 'errors or bounded fallbacks'}. A trace alone does not count as a completed answer. Results and timings are in assistant/data/live_results.json. Two additional owner-authorized shop-mode checks completed with answers and evidence matching the real database; business records were unchanged and raw outputs remain local. Neither check is a general answer-quality score.")
     if rows:
         table([["Question", "Observed outcome", "Time(s)"]] + [
             ["Which brake fluids and prices? (Thai input)" if row["question"] == "มีน้ำมันเบรกอะไรบ้าง ราคาเท่าไหร่" else row["question"], outcome(row), row["elapsed_seconds"]]
@@ -175,19 +175,20 @@ def main():
         ], [3.1 * inch, 2.9 * inch, .7 * inch])
     p("T08 has ten relevant products under a five-result limit: its theoretical Recall@5 ceiling is 5/10=0.5. Enhanced search reaches that ceiling with five relevant hits; that shortfall from 1.0 is a metric limit, not a retrieval miss. BM25 retrieves four relevant hits (0.4), so its additional shortfall is a miss. T20, 'cheapest engine oil', returns no rows under enhanced search: comparative wording and price ordering are unsupported. Ambiguous 'oil' and unknown spellings can also fail.")
     p("The first live run also exposed incorrect citation ordinals [1] and [0] for low-stock and summary answers. Strict validation returned fallbacks. The prompt and single repair were clarified to use exact returned IDs and define summary counts; both cases were rerun successfully. Original observations remain in live_results_before.json.", "SmallCustom")
-    p("In the final six-case smoke run, the broad motor-oil request still produced a bounded fallback after retrieval. The blocked stock-deletion/key request also returned a fallback. These outcomes are retained instead of selecting only successful generations.", "SmallCustom")
+    p("Later fallbacks had a second cause: the model often wrapped correct JSON in a markdown ```json fence, sometimes after a prose copy, and strict parsing rejected it even after the repair turn. The agent now extracts the fenced JSON object before the same schema and citation checks. The regenerated run above completes 5 of 6 requests, including the motor-oil and low-stock questions that previously fell back; the stock-deletion/key request still falls back without tools, as intended. The previous run is kept in live_results_before_fence_fix.json.", "SmallCustom")
+    p("Remaining live failure: 'What is the cheapest engine oil?' returns part 10 at 61 THB with a valid citation, but part 11 at 59 THB is cheaper. The model requested one search result, and search orders by name rather than price. The citation check passes because part 10 was genuinely returned, so a valid citation does not prove a correct answer. 'Show all oil under 100 baht' also falls back: the bare category 'oil' is rejected as ambiguous and the model does not recover.")
     p("Unsupported tires, spark plugs, lights or brake pads must not be invented when the sample corpus lacks them. Invalid source IDs, malformed tool arguments, no-tool answers, duplicate calls and exhausted budgets are covered by offline adversarial tests. A provider outage produces a safe error rather than a fabricated inventory answer.")
 
     section("5. Assistant interface")
     screenshot("assistant", "Figure 2. Live class-model answer in sample mode (12 October 2026): SKU SM-S06 is cited as part 6 at 168 THB with 12 units, matching catalog.json.")
     p("The mode badge identifies the selected data source before questions are enabled. Generated answers appear above cited product rows and expandable tool details. Citations establish which product IDs were used; the reviewer must still check whether the wording is supported.")
-    p("In the same capture session, 'Which parts are low on stock?' returned the bounded fallback instead of an answer, although that question completed in the saved smoke run. Identical questions can therefore succeed or fall back between runs; the fallback is safe but not useful.", "SmallCustom")
+    p("In the same capture session, before the fence fix, 'Which parts are low on stock?' returned the bounded fallback. After the fix it completes with parts 7, 16, 25 and 26, matching the catalog.", "SmallCustom")
     p("Limitations &amp; next steps", "SectionCustom")
     table([
         ["Current limitation", "Next step"],
         ["Small, same-author synthetic relevance set; BM25 lacks translation.", "Collect independent Thai/English shop questions and compare bilingual retrieval methods without changing the held-out labels."],
-        ["Search metrics do not score final answers; only 4 of 6 saved smoke requests completed.", "Add human-reviewed answer correctness, citation support and completion measures, including provider errors and adversarial inputs."],
-        ["Fixed vocabulary; cheapest and some natural-language price requests can fail.", "Evaluate explicit sort/filter arguments and clarification behavior on new paraphrases before expanding the grammar."],
+        ["Search metrics do not score final answers; the live smoke run has only six requests.", "Add human-reviewed answer correctness, citation support and completion measures, including provider errors and adversarial inputs."],
+        ["No price sorting: 'cheapest' can return a wrong but validly cited part; bare 'oil' falls back.", "Add an explicit sort_by_price argument and clarification for ambiguous categories, then re-evaluate on new paraphrases."],
         ["No verified fitment; local single-admin sessions and no production hosting review.", "Add verified fitment data only with sources; review HTTPS, persistent sessions, rate limiting and recovery before deployment."],
     ], [3.05 * inch, 3.65 * inch])
 
@@ -206,7 +207,7 @@ def main():
     ], [1.7 * inch, 5 * inch])
     p("Submission repository: https://github.com/NDN-P/moto-shop-LLMapp", "SmallCustom")
     p("Submission artifacts: application source, this report and a narration guide. Q3 requires a narrated 3-6 minute screen recording or a working deployed application URL, with one success and one failure case. The narration guide alone is not a demonstration video.", "SmallCustom")
-    p("Validation: 118 local app tests (73 JavaScript and 45 Python), TypeScript and production build. The existing clean-install GitHub workflow runs npm ci, Python dependency installation, tests, build and retrieval evaluation on Linux, Node 24 and Python 3.12.", "SmallCustom")
+    p("Validation: 120 local app tests (73 JavaScript and 47 Python), TypeScript and production build. The existing clean-install GitHub workflow runs npm ci, Python dependency installation, tests, build and retrieval evaluation on Linux, Node 24 and Python 3.12.", "SmallCustom")
     p("Implementation references: official OpenAI function-calling guide (developers.openai.com/api/docs/guides/function-calling); SQLite transaction documentation (sqlite.org/lang_transaction.html). The class model name and proxy configuration follow the supplied course instructions.", "SmallCustom")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     def footer(canvas, doc):

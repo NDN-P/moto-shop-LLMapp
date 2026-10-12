@@ -1,6 +1,6 @@
 # Capstone hand-in
 
-The application lives in `LLMAPP/moto-shop` with one folder level. Its visible brand is `shop-name`. All 118 local tests, TypeScript and production-build checks passed on 12 October 2026. Two earlier live shop-mode requests returned answers and evidence matching the real database, with no business records changed. The saved synthetic benchmark and six-case model smoke report remain separate from these real-inventory checks.
+The application lives in `LLMAPP/moto-shop` with one folder level. Its visible brand is `shop-name`. All 120 local tests, TypeScript and production-build checks passed on 12 October 2026. Two earlier live shop-mode requests returned answers and evidence matching the real database, with no business records changed. The saved synthetic benchmark and six-case model smoke report remain separate from these real-inventory checks.
 
 ## Q1 - Repository
 
@@ -30,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 
 If `demo.db` is missing, first run `.\.venv\Scripts\python.exe scripts\seed-demo.py`. That command refuses to overwrite an existing file.
 
-Use the URL printed by the launcher and confirm the **Sample catalog** badge; a second running instance may use another port. These session overrides keep the course demonstration on the invented evaluation data even when your private `.env` selects shop mode. Close this PowerShell session afterward to return to your private configuration. Shop mode is an optional read-only connection to real inventory; it sends the question and selected product fields to the course proxy, so it is outside the recorded synthetic evaluation. Keep passwords and private windows outside the recording. Show a successful live lookup and its evidence, then the actual failure of “Show motor oil under 150 baht” if it recurs, or the retained unsupported “cheapest engine oil” retrieval case. Describe the outcome you actually observe; the model can vary between runs.
+Use the URL printed by the launcher and confirm the **Sample catalog** badge; a second running instance may use another port. These session overrides keep the course demonstration on the invented evaluation data even when your private `.env` selects shop mode. Close this PowerShell session afterward to return to your private configuration. Shop mode is an optional read-only connection to real inventory; it sends the question and selected product fields to the course proxy, so it is outside the recorded synthetic evaluation. Keep passwords and private windows outside the recording. Show a successful live lookup such as “What is the sample price and stock for SKU SM-S06?” with its evidence. For the failure, ask “What is the cheapest engine oil?”: the cited part 10 (61 THB) is not the cheapest, because part 11 is 59 THB. Show Inventory to prove it, and explain that the citation is valid but the answer is wrong because search has no price sorting. Describe the outcome you actually observe; the model can vary between runs.
 
 ## Before the in-person defense
 

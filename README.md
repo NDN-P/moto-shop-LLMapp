@@ -78,7 +78,7 @@ $env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant\live_evaluate.py --limit 1
 ```
 
-This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The retained six-question sample run completed four answers and produced two bounded fallbacks. Two separate shop-mode integration checks matched product values and inventory totals without changing business records. Neither observation estimates general model accuracy.
+This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The current six-question sample run completed five answers; the sixth, a stock-deletion/API-key request, fell back without tools as intended. Two separate shop-mode integration checks matched product values and inventory totals without changing business records. Neither observation estimates general model accuracy.
 
 ## Course capabilities
 
@@ -89,7 +89,7 @@ This overwrites `assistant/data/live_results.json`; inspect actual results befor
 
 ## Limitations & next steps
 
-The vocabulary is finite; unseen paraphrases and comparative requests such as “cheapest engine oil” can fail. A maximum-price tool filter exists, but the retained “under 150 baht” model run fell back after a successful lookup. Each chat question is independent. Source-ID validation checks the cited evidence, not every sentence's correctness. Fitment data is unverified, and slow or unavailable proxy calls can cause errors or a fallback.
+The vocabulary is finite; unseen paraphrases and comparative requests such as “cheapest engine oil” can fail. There is no price sorting: “What is the cheapest engine oil?” can return a validly cited but wrong part, and the bare word “oil” is rejected as ambiguous. Each chat question is independent. Source-ID validation checks the cited evidence, not every sentence's correctness. Fitment data is unverified, and slow or unavailable proxy calls can cause errors or a fallback.
 
 Next steps are to test independent questions and final answers, add verified fitment and comparison handling, and evaluate with shop staff. Sessions currently live in one server process and reset on restart; public hosting would also need HTTPS, request limits and durable sessions.
 
