@@ -268,6 +268,26 @@ class AgentTests(unittest.TestCase):
             with self.subTest(payload=payload), self.assertRaises(ValueError):
                 validate_final(json.dumps(payload), {1})
 
+    def test_final_accepts_fenced_json_after_prose(self):
+        payload = json.dumps({"answer": "Low stock: part 7.", "sources": [7]})
+        for content in ("```json\n" + payload + "\n```", "Here you go.\n\n```json\n" + payload + "\n```",
+                        "```\n" + payload + "\n```"):
+            with self.subTest(content=content):
+                self.assertEqual(validate_final(content, {7}), {"answer": "Low stock: part 7.", "sources": [7]})
+        with self.assertRaises(ValueError):
+            validate_final("```json\n" + json.dumps({"answer": "x", "sources": [99]}) + "\n```", {7})
+        with self.assertRaises(ValueError):
+            validate_final("Part 7 is low on stock.", {7})
+
+    def test_fenced_final_answer_completes_without_fallback(self):
+        catalog = FakeCatalog()
+        client = FakeClient([
+            completion(calls=[("get_part", json.dumps({"part_id": 1}))]),
+            completion(content="Sure.\n```json\n" + json.dumps({"answer": "Part 1 is in stock.", "sources": [1]}) + "\n```"),
+        ])
+        result = ask("part 1", catalog, client)
+        self.assertEqual((result["answer"], result["sources"]), ("Part 1 is in stock.", [1]))
+
     def test_configuration_required_without_public_endpoint_fallback(self):
         with patch.dict(os.environ, {}, clear=True), self.assertRaisesRegex(AssistantError, "OPENAI_BASE_URL"):
             ask("oil", FakeCatalog())

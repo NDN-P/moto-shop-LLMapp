@@ -3,6 +3,7 @@
 import json
 import math
 import os
+import re
 import sys
 
 try:
@@ -93,8 +94,22 @@ def validate_arguments(name, raw):
     return arguments
 
 
+def parse_final(content):
+    """Parse the final JSON object, also when the model wraps it in a markdown code fence."""
+    if not isinstance(content, str):
+        raise ValueError("Final response must be text")
+    text = content.strip()
+    # Prefer the last fenced block: the model sometimes adds prose before it.
+    for candidate in [text] + re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)[::-1]:
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+    raise ValueError("Return only a JSON object")
+
+
 def validate_final(content, evidence_ids):
-    result = json.loads(content)
+    result = parse_final(content)
     if not isinstance(result, dict) or set(result) != {"answer", "sources"}:
         raise ValueError("Return exactly answer and sources")
     answer, sources = result["answer"], result["sources"]
