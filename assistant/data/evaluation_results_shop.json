@@ -1,0 +1,1062 @@
+{
+  "metadata": {
+    "generated_at_utc": "2026-10-25T04:48:46.824474+00:00",
+    "python_version": "3.12.14",
+    "catalog_sha256": "22a7c1c155c3d194b0a344d0d380ca78c705fbbce56cb5e9e48f8d8affa8f33d",
+    "questions_sha256": "2eb1a22d58516d0fdd9c14eb7217ebfcb5e75af48de552149f7d6dca0a20623a",
+    "top_k": 5,
+    "baseline": "Existing name/SKU case-insensitive substring matcher, name then ID order, with shared category/price/stock tool filters.",
+    "bm25": "Standard lexical BM25 (k1=1.2, b=0.75) over equally weighted name/SKU/category/description fields after the same structured filters. NFKC case folding and Thai-preserving word/size/SKU tokens; OR matching, positive scores only, name/ID tie-break. No aliases, translation, stop-word list or label-tuned rules.",
+    "enhanced": "Explicit bilingual category/brand/size normalization and AND token matching; fixed field weights 3/4/2/1 for name/SKU/category/description.",
+    "metric_policy": "Recall@5 and MRR are macro-averaged over answerable queries only. Zero-result accuracy is reported separately over gold-empty queries.",
+    "synthetic_data": false,
+    "scope": "Offline product retrieval on the real shop catalog. These numbers do not measure LLM answer quality, stock freshness, or production safety.",
+    "labeling": "Relevant IDs were labelled by reading the real shop catalog snapshot (shop_catalog.json), written before any method was run on it. Queries imitate counter-staff searches: Thai and English names, real brand names in English, inner-tube sizes in several notations, and price filters.",
+    "split_policy": "10 development and 20 test questions. The enhanced retriever was frozen before these questions existed (it was built on the invented catalog), so its first run here is a held-out test on unseen data.",
+    "comparison_policy": "Same three methods and settings as the invented-catalog evaluation; no parameters were tuned on these questions for the frozen run."
+  },
+  "summary": {
+    "dev": {
+      "baseline": {
+        "queries": 10,
+        "answerable_queries": 9,
+        "zero_result_queries": 1,
+        "recall_at_5": 0.2222222222222222,
+        "mrr": 0.2222222222222222,
+        "zero_result_accuracy": 1.0
+      },
+      "bm25": {
+        "queries": 10,
+        "answerable_queries": 9,
+        "zero_result_queries": 1,
+        "recall_at_5": 0.4444444444444444,
+        "mrr": 0.3888888888888889,
+        "zero_result_accuracy": 1.0
+      },
+      "enhanced": {
+        "queries": 10,
+        "answerable_queries": 9,
+        "zero_result_queries": 1,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "zero_result_accuracy": 1.0
+      }
+    },
+    "test": {
+      "baseline": {
+        "queries": 20,
+        "answerable_queries": 18,
+        "zero_result_queries": 2,
+        "recall_at_5": 0.1111111111111111,
+        "mrr": 0.1111111111111111,
+        "zero_result_accuracy": 1.0
+      },
+      "bm25": {
+        "queries": 20,
+        "answerable_queries": 18,
+        "zero_result_queries": 2,
+        "recall_at_5": 0.5833333333333334,
+        "mrr": 0.5833333333333334,
+        "zero_result_accuracy": 1.0
+      },
+      "enhanced": {
+        "queries": 20,
+        "answerable_queries": 18,
+        "zero_result_queries": 2,
+        "recall_at_5": 0.9444444444444444,
+        "mrr": 0.9444444444444444,
+        "zero_result_accuracy": 1.0
+      }
+    },
+    "all": {
+      "baseline": {
+        "queries": 30,
+        "answerable_queries": 27,
+        "zero_result_queries": 3,
+        "recall_at_5": 0.14814814814814814,
+        "mrr": 0.14814814814814814,
+        "zero_result_accuracy": 1.0
+      },
+      "bm25": {
+        "queries": 30,
+        "answerable_queries": 27,
+        "zero_result_queries": 3,
+        "recall_at_5": 0.5370370370370371,
+        "mrr": 0.5185185185185185,
+        "zero_result_accuracy": 1.0
+      },
+      "enhanced": {
+        "queries": 30,
+        "answerable_queries": 27,
+        "zero_result_queries": 3,
+        "recall_at_5": 0.9629629629629629,
+        "mrr": 0.9629629629629629,
+        "zero_result_accuracy": 1.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "SD01",
+      "split": "dev",
+      "query": "engine oil",
+      "relevant_ids": [
+        10,
+        11
+      ],
+      "filters": {
+        "max_price": 60
+      },
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          11,
+          10
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD02",
+      "split": "dev",
+      "query": "ปตท 0.8",
+      "relevant_ids": [
+        4
+      ],
+      "baseline": {
+        "retrieved_ids": [
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          4
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          4,
+          14,
+          8,
+          3,
+          11
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD03",
+      "split": "dev",
+      "query": "Castrol",
+      "relevant_ids": [
+        8,
+        9,
+        15
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          8,
+          9,
+          15
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD04",
+      "split": "dev",
+      "query": "inner tube 250-17",
+      "relevant_ids": [
+        18,
+        26
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          18,
+          26
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD05",
+      "split": "dev",
+      "query": "น้ำมันเบรก",
+      "relevant_ids": [
+        16,
+        17
+      ],
+      "baseline": {
+        "retrieved_ids": [
+          16,
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          16,
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          16,
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD06",
+      "split": "dev",
+      "query": "gear oil",
+      "relevant_ids": [
+        13,
+        14
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          14,
+          13
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD07",
+      "split": "dev",
+      "query": "tube 2.75/3.00-17",
+      "relevant_ids": [
+        23
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          23
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD08",
+      "split": "dev",
+      "query": "spark plug",
+      "relevant_ids": [],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "SD09",
+      "split": "dev",
+      "query": "PTT engine oil 1 litre",
+      "relevant_ids": [
+        5
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          9,
+          5,
+          7
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.5,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "SD10",
+      "split": "dev",
+      "query": "Bangchak",
+      "relevant_ids": [
+        3,
+        13
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          3,
+          13
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST01",
+      "split": "test",
+      "query": "ปตท",
+      "relevant_ids": [
+        4,
+        5,
+        11,
+        14
+      ],
+      "baseline": {
+        "retrieved_ids": [
+          14,
+          11,
+          4,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          14,
+          11,
+          4,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          14,
+          11,
+          4,
+          5
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST02",
+      "split": "test",
+      "query": "คัสตรอลแอคทีฟ",
+      "relevant_ids": [
+        8,
+        9
+      ],
+      "baseline": {
+        "retrieved_ids": [
+          8,
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          8,
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          8,
+          9
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST03",
+      "split": "test",
+      "query": "Castrol Activ 0.8L",
+      "relevant_ids": [
+        8
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          8
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST04",
+      "split": "test",
+      "query": "PowerOne 1L",
+      "relevant_ids": [
+        7
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          7
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST05",
+      "split": "test",
+      "query": "motor oil 0.8",
+      "relevant_ids": [
+        3,
+        4,
+        6,
+        8
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          8,
+          3,
+          4,
+          6
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          8,
+          3,
+          4,
+          6
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST06",
+      "split": "test",
+      "query": "engine oil 1L",
+      "relevant_ids": [
+        5,
+        7,
+        9
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          9,
+          5,
+          7
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST07",
+      "split": "test",
+      "query": "engine oil 0.5",
+      "relevant_ids": [
+        10,
+        11
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          11,
+          10
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          17,
+          11,
+          10
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.5,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST08",
+      "split": "test",
+      "query": "brake fluid 0.5",
+      "relevant_ids": [
+        17
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          17
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          17,
+          11,
+          10
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST09",
+      "split": "test",
+      "query": "ยางใน 225-17",
+      "relevant_ids": [
+        19,
+        27
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          27
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          27,
+          20,
+          29,
+          28
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST10",
+      "split": "test",
+      "query": "inner tube 2.25-17",
+      "relevant_ids": [
+        19,
+        27
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          27
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST11",
+      "split": "test",
+      "query": "BH inner tube",
+      "relevant_ids": [
+        18,
+        19,
+        22,
+        23
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          19,
+          22,
+          18,
+          23
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST12",
+      "split": "test",
+      "query": "Camel tube",
+      "relevant_ids": [
+        24
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          24
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          24
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST13",
+      "split": "test",
+      "query": "inner tube 350-10",
+      "relevant_ids": [
+        28
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          28
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          28
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST14",
+      "split": "test",
+      "query": "ยางใน 14",
+      "relevant_ids": [
+        20,
+        22
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          22,
+          20
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          20,
+          29,
+          28,
+          25,
+          21
+        ],
+        "recall_at_5": 0.5,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST15",
+      "split": "test",
+      "query": "inner tube",
+      "relevant_ids": [
+        18,
+        19,
+        21
+      ],
+      "filters": {
+        "max_price": 52
+      },
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          21,
+          19,
+          18
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST16",
+      "split": "test",
+      "query": "oil kit",
+      "relevant_ids": [
+        15
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          15
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST17",
+      "split": "test",
+      "query": "น้ำมันเฟืองท้าย",
+      "relevant_ids": [
+        13,
+        14
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [
+          14,
+          13
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [
+          14,
+          13
+        ],
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0,
+        "zero_result_correct": null
+      }
+    },
+    {
+      "id": "ST18",
+      "split": "test",
+      "query": "tubeless tire 90/90-14",
+      "relevant_ids": [],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "ST19",
+      "split": "test",
+      "query": "brake pads",
+      "relevant_ids": [],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": null,
+        "reciprocal_rank": null,
+        "zero_result_correct": true
+      }
+    },
+    {
+      "id": "ST20",
+      "split": "test",
+      "query": "cheapest engine oil",
+      "relevant_ids": [
+        11,
+        10,
+        12,
+        3,
+        4
+      ],
+      "baseline": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "enhanced": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      },
+      "bm25": {
+        "retrieved_ids": [],
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "zero_result_correct": null
+      }
+    }
+  ]
+}

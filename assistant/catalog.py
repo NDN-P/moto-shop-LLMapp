@@ -25,8 +25,13 @@ BRAND_ALIASES = {
     "โรดฟ็อกซ์": ("roadfox", "road fox", "โรดฟ็อกซ์"),
     "ไรเดอร์พลัส": ("riderplus", "rider plus", "ไรเดอร์พลัส"),
     "สวิฟต์โมโต": ("swiftmoto", "swift moto", "สวิฟต์โมโต"),
-    "แอคทีฟ": ("active", "แอคทีฟ"),
+    "แอคทีฟ": ("active", "activ", "แอคทีฟ"),
     "สปอร์ต": ("sport", "สปอร์ต"),
+    # Real shop brands, added after the held-out run on the real catalog.
+    "คัสตรอล": ("castrol", "คัสตรอล"),
+    "ปตท": ("ptt", "ปตท"),
+    "บางจาก": ("bangchak", "bang chak", "บางจาก"),
+    "พาวเวอร์วัน": ("powerone", "power one", "พาวเวอร์วัน"),
 }
 
 STOP_WORDS = set("find show me please available any the a an for have do you can what which "
