@@ -15,7 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output" / "pdf" / "moto-shop-capstone-report.pdf"
 AUTHOR = "Natdanai Phurintanachot"
 STUDENT_ID = "67070230"
-REPORT_DATE = "12 October 2026"
+SCHOOL = "School of Information Technology, KMITL"
+CONTACT = "67070230@kmitl.ac.th"
+REPORT_DATE = "25 October 2026"
 BLUE = colors.HexColor("#125B81")
 INK = colors.HexColor("#142B3B")
 styles = getSampleStyleSheet()
@@ -109,7 +111,7 @@ def main():
 
     p("MOTO SHOP<br/>Inventory assistant", "TitleCustom")
     p("Building LLM-Powered Applications - Capstone", "SectionCustom")
-    p(f"Author: {AUTHOR}<br/>Student ID: {STUDENT_ID}<br/>Prepared: {REPORT_DATE}", "SmallCustom")
+    p(f"Author: {AUTHOR}<br/>Student ID: {STUDENT_ID}<br/>{SCHOOL}<br/>Contact: {CONTACT}<br/>Prepared: {REPORT_DATE}", "SmallCustom")
     p("A working motorcycle parts inventory application with a bounded Python tool agent, structured answers, visible product evidence and a reproducible retrieval evaluation.")
     p("The intended users are a motorcycle shop owner and counter staff who repeatedly look up Thai/English part names, prices and stock. The project extends their inventory, supplier, stock-movement and warehouse workflow. The assistant uses an invented catalog by default, or the current local inventory when the owner explicitly enables shop mode.")
     table([

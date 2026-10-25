@@ -98,3 +98,7 @@ Next steps are to test independent questions and final answers, add verified fit
 See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; recording, proposal, verification and defense guides are in `docs/`. `output/demo/narration-guide.mp3` is an optional narration guide, not a screen recording. Rebuild the PDF with `python scripts/build_report.py` after installing optional `requirements-report.txt` dependencies and supplying both [genuine app screenshots](docs/screenshots/README.md).
 
 The course requires a public repository URL, a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.
+
+## Author
+
+Natdanai Phurintanachot (student ID 67070230), School of Information Technology, KMITL. Contact: 67070230@kmitl.ac.th
