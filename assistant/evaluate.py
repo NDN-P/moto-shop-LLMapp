@@ -109,11 +109,11 @@ def evaluate(fixture_path, questions_path):
             "bm25": "Standard lexical BM25 (k1=1.2, b=0.75) over equally weighted name/SKU/category/description fields after the same structured filters. NFKC case folding and Thai-preserving word/size/SKU tokens; OR matching, positive scores only, name/ID tie-break. No aliases, translation, stop-word list or label-tuned rules.",
             "enhanced": "Explicit bilingual category/brand/size normalization and AND token matching; fixed field weights 3/4/2/1 for name/SKU/category/description.",
             "metric_policy": "Recall@5 and MRR are macro-averaged over answerable queries only. Zero-result accuracy is reported separately over gold-empty queries.",
-            "synthetic_data": True,
-            "scope": "Offline product retrieval on an entirely invented course-demo catalog. These numbers do not measure real shop search quality, LLM answer quality, database freshness, or production safety.",
+            "synthetic_data": catalog.is_synthetic,
+            "scope": dataset.get("scope", "Offline product retrieval on an entirely invented course-demo catalog. These numbers do not measure real shop search quality, LLM answer quality, database freshness, or production safety."),
             "labeling": dataset["labeling"],
             "split_policy": dataset["split_policy"],
-            "comparison_policy": "BM25 was added after inspection of the existing fixed questions and earlier results, using standard untuned parameters. This is a retrospective comparison on the same-author synthetic dataset, not a new blinded test. Raw lexical BM25 cannot translate English queries to Thai-only catalog fields; the enhanced method's bilingual vocabulary is part of its advantage.",
+            "comparison_policy": dataset.get("comparison_policy", "BM25 was added after inspection of the existing fixed questions and earlier results, using standard untuned parameters. This is a retrospective comparison on the same-author synthetic dataset, not a new blinded test. Raw lexical BM25 cannot translate English queries to Thai-only catalog fields; the enhanced method's bilingual vocabulary is part of its advantage."),
         },
         "summary": {
             split: {method: summarize([row for row in results if split == "all" or row["split"] == split], method)

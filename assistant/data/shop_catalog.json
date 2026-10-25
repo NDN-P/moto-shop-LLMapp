@@ -1,0 +1,223 @@
+{
+  "synthetic": false,
+  "source": "Snapshot of the owner's real shop inventory (active products) taken on 25 October 2026.",
+  "privacy": "SKU codes, descriptions, supplier links, photos and stock history are withheld: the SKUs and some descriptions encode private cost information.",
+  "parts": [
+    {
+      "id": 3,
+      "name": "บางจาก 0.8",
+      "category": "น้ำมันเครื่อง",
+      "price": 70.0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": 4,
+      "name": "ปตท 0.8",
+      "category": "น้ำมันเครื่อง",
+      "price": 70.0,
+      "stock": 19,
+      "minStock": 5
+    },
+    {
+      "id": 5,
+      "name": "ปตท 1",
+      "category": "น้ำมันเครื่อง",
+      "price": 100.0,
+      "stock": 13,
+      "minStock": 5
+    },
+    {
+      "id": 6,
+      "name": "พาวเวอร์วัน 0.8",
+      "category": "น้ำมันเครื่อง",
+      "price": 150.0,
+      "stock": 11,
+      "minStock": 5
+    },
+    {
+      "id": 7,
+      "name": "พาวเวอร์วัน 1",
+      "category": "น้ำมันเครื่อง",
+      "price": 175.0,
+      "stock": 11,
+      "minStock": 5
+    },
+    {
+      "id": 8,
+      "name": "คัสตรอลแอคทีฟ 0.8",
+      "category": "น้ำมันเครื่อง",
+      "price": 118.0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": 9,
+      "name": "คัสตรอลแอคทีฟ 1",
+      "category": "น้ำมันเครื่อง",
+      "price": 125.0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": 10,
+      "name": "มอลล่า 0.5",
+      "category": "น้ำมันเครื่อง",
+      "price": 54.0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": 11,
+      "name": "ปตท 0.5",
+      "category": "น้ำมันเครื่อง",
+      "price": 53.0,
+      "stock": 19,
+      "minStock": 5
+    },
+    {
+      "id": 12,
+      "name": "เวลลอย",
+      "category": "น้ำมันเครื่อง",
+      "price": 65.0,
+      "stock": 21,
+      "minStock": 5
+    },
+    {
+      "id": 13,
+      "name": "เฟืองท้ายบางจาก",
+      "category": "น้ำมันเฟืองท้าย",
+      "price": 35.0,
+      "stock": 1,
+      "minStock": 1
+    },
+    {
+      "id": 14,
+      "name": "ปตท",
+      "category": "น้ำมันเฟืองท้าย",
+      "price": 35.0,
+      "stock": 12,
+      "minStock": 5
+    },
+    {
+      "id": 15,
+      "name": "คัสตรอลชุด",
+      "category": "น้ำมันชุด",
+      "price": 160.0,
+      "stock": 16,
+      "minStock": 5
+    },
+    {
+      "id": 16,
+      "name": "น้ำมันเบรก 0.2",
+      "category": "น้ำมันเบรก",
+      "price": 45.0,
+      "stock": 3,
+      "minStock": 5
+    },
+    {
+      "id": 17,
+      "name": "น้ำมันเบรก 0.5",
+      "category": "น้ำมันเบรก",
+      "price": 85.0,
+      "stock": 4,
+      "minStock": 2
+    },
+    {
+      "id": 18,
+      "name": "250-17 BH",
+      "category": "ยางใน",
+      "price": 50.0,
+      "stock": 38,
+      "minStock": 5
+    },
+    {
+      "id": 19,
+      "name": "225-17 BH",
+      "category": "ยางใน",
+      "price": 50.0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": 20,
+      "name": "275/300-14",
+      "category": "ยางใน",
+      "price": 65.0,
+      "stock": 10,
+      "minStock": 5
+    },
+    {
+      "id": 21,
+      "name": "200-17 SR",
+      "category": "ยางใน",
+      "price": 52.0,
+      "stock": 7,
+      "minStock": 5
+    },
+    {
+      "id": 22,
+      "name": "250-14 BH",
+      "category": "ยางใน",
+      "price": 65.0,
+      "stock": 19,
+      "minStock": 5
+    },
+    {
+      "id": 23,
+      "name": "275/300-17 BH",
+      "category": "ยางใน",
+      "price": 67.0,
+      "stock": 25,
+      "minStock": 10
+    },
+    {
+      "id": 24,
+      "name": "275-19 Camel",
+      "category": "ยางใน",
+      "price": 85.0,
+      "stock": 5,
+      "minStock": 1
+    },
+    {
+      "id": 25,
+      "name": "350/400-18",
+      "category": "ยางใน",
+      "price": 140.0,
+      "stock": 1,
+      "minStock": 1
+    },
+    {
+      "id": 26,
+      "name": "250-17 SR",
+      "category": "ยางใน",
+      "price": 58.0,
+      "stock": 5,
+      "minStock": 5
+    },
+    {
+      "id": 27,
+      "name": "225-17 SR",
+      "category": "ยางใน",
+      "price": 56.0,
+      "stock": 11,
+      "minStock": 5
+    },
+    {
+      "id": 28,
+      "name": "350-10",
+      "category": "ยางใน",
+      "price": 100.0,
+      "stock": 8,
+      "minStock": 5
+    },
+    {
+      "id": 29,
+      "name": "275/300-8",
+      "category": "ยางใน",
+      "price": 90.0,
+      "stock": 6,
+      "minStock": 2
+    }
+  ]
+}

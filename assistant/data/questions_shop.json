@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "synthetic": false,
+  "labeling": "Relevant IDs were labelled by reading the real shop catalog snapshot (shop_catalog.json), written before any method was run on it. Queries imitate counter-staff searches: Thai and English names, real brand names in English, inner-tube sizes in several notations, and price filters.",
+  "split_policy": "10 development and 20 test questions. The enhanced retriever was frozen before these questions existed (it was built on the invented catalog), so its first run here is a held-out test on unseen data.",
+  "scope": "Offline product retrieval on the real shop catalog. These numbers do not measure LLM answer quality, stock freshness, or production safety.",
+  "comparison_policy": "Same three methods and settings as the invented-catalog evaluation; no parameters were tuned on these questions for the frozen run.",
+  "questions": [
+    {
+      "id": "SD01",
+      "split": "dev",
+      "query": "engine oil",
+      "relevant_ids": [
+        10,
+        11
+      ],
+      "filters": {
+        "max_price": 60
+      }
+    },
+    {
+      "id": "SD02",
+      "split": "dev",
+      "query": "ปตท 0.8",
+      "relevant_ids": [
+        4
+      ]
+    },
+    {
+      "id": "SD03",
+      "split": "dev",
+      "query": "Castrol",
+      "relevant_ids": [
+        8,
+        9,
+        15
+      ]
+    },
+    {
+      "id": "SD04",
+      "split": "dev",
+      "query": "inner tube 250-17",
+      "relevant_ids": [
+        18,
+        26
+      ]
+    },
+    {
+      "id": "SD05",
+      "split": "dev",
+      "query": "น้ำมันเบรก",
+      "relevant_ids": [
+        16,
+        17
+      ]
+    },
+    {
+      "id": "SD06",
+      "split": "dev",
+      "query": "gear oil",
+      "relevant_ids": [
+        13,
+        14
+      ]
+    },
+    {
+      "id": "SD07",
+      "split": "dev",
+      "query": "tube 2.75/3.00-17",
+      "relevant_ids": [
+        23
+      ]
+    },
+    {
+      "id": "SD08",
+      "split": "dev",
+      "query": "spark plug",
+      "relevant_ids": []
+    },
+    {
+      "id": "SD09",
+      "split": "dev",
+      "query": "PTT engine oil 1 litre",
+      "relevant_ids": [
+        5
+      ]
+    },
+    {
+      "id": "SD10",
+      "split": "dev",
+      "query": "Bangchak",
+      "relevant_ids": [
+        3,
+        13
+      ]
+    },
+    {
+      "id": "ST01",
+      "split": "test",
+      "query": "ปตท",
+      "relevant_ids": [
+        4,
+        5,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "ST02",
+      "split": "test",
+      "query": "คัสตรอลแอคทีฟ",
+      "relevant_ids": [
+        8,
+        9
+      ]
+    },
+    {
+      "id": "ST03",
+      "split": "test",
+      "query": "Castrol Activ 0.8L",
+      "relevant_ids": [
+        8
+      ]
+    },
+    {
+      "id": "ST04",
+      "split": "test",
+      "query": "PowerOne 1L",
+      "relevant_ids": [
+        7
+      ]
+    },
+    {
+      "id": "ST05",
+      "split": "test",
+      "query": "motor oil 0.8",
+      "relevant_ids": [
+        3,
+        4,
+        6,
+        8
+      ]
+    },
+    {
+      "id": "ST06",
+      "split": "test",
+      "query": "engine oil 1L",
+      "relevant_ids": [
+        5,
+        7,
+        9
+      ]
+    },
+    {
+      "id": "ST07",
+      "split": "test",
+      "query": "engine oil 0.5",
+      "relevant_ids": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "ST08",
+      "split": "test",
+      "query": "brake fluid 0.5",
+      "relevant_ids": [
+        17
+      ]
+    },
+    {
+      "id": "ST09",
+      "split": "test",
+      "query": "ยางใน 225-17",
+      "relevant_ids": [
+        19,
+        27
+      ]
+    },
+    {
+      "id": "ST10",
+      "split": "test",
+      "query": "inner tube 2.25-17",
+      "relevant_ids": [
+        19,
+        27
+      ]
+    },
+    {
+      "id": "ST11",
+      "split": "test",
+      "query": "BH inner tube",
+      "relevant_ids": [
+        18,
+        19,
+        22,
+        23
+      ]
+    },
+    {
+      "id": "ST12",
+      "split": "test",
+      "query": "Camel tube",
+      "relevant_ids": [
+        24
+      ]
+    },
+    {
+      "id": "ST13",
+      "split": "test",
+      "query": "inner tube 350-10",
+      "relevant_ids": [
+        28
+      ]
+    },
+    {
+      "id": "ST14",
+      "split": "test",
+      "query": "ยางใน 14",
+      "relevant_ids": [
+        20,
+        22
+      ]
+    },
+    {
+      "id": "ST15",
+      "split": "test",
+      "query": "inner tube",
+      "relevant_ids": [
+        18,
+        19,
+        21
+      ],
+      "filters": {
+        "max_price": 52
+      }
+    },
+    {
+      "id": "ST16",
+      "split": "test",
+      "query": "oil kit",
+      "relevant_ids": [
+        15
+      ]
+    },
+    {
+      "id": "ST17",
+      "split": "test",
+      "query": "น้ำมันเฟืองท้าย",
+      "relevant_ids": [
+        13,
+        14
+      ]
+    },
+    {
+      "id": "ST18",
+      "split": "test",
+      "query": "tubeless tire 90/90-14",
+      "relevant_ids": []
+    },
+    {
+      "id": "ST19",
+      "split": "test",
+      "query": "brake pads",
+      "relevant_ids": []
+    },
+    {
+      "id": "ST20",
+      "split": "test",
+      "query": "cheapest engine oil",
+      "relevant_ids": [
+        11,
+        10,
+        12,
+        3,
+        4
+      ]
+    }
+  ]
+}
