@@ -183,16 +183,15 @@ Enhanced & \textbf{1.00} & \textbf{1.00} & \textbf{.912} & \textbf{.941} & \text
 
 \begin{figure*}[t]
 \centering
-\begin{minipage}[b]{0.535\textwidth}\centering
-\includegraphics[width=\linewidth,trim=190 280 0 0,clip]{inventory.png}\\[1mm]
+\begin{minipage}[t]{0.49\textwidth}\centering
+\includegraphics[width=\linewidth]{inventory.png}\\[1mm]
 \small (a) Inventory page on the invented demo database.
 \end{minipage}\hfill
-\begin{minipage}[b]{0.445\textwidth}\centering
-\includegraphics[width=\linewidth,trim=300 684 110 0,clip]{assistant.png}\\[1mm]
-\includegraphics[width=\linewidth,trim=300 19 110 790,clip]{assistant.png}\\[1mm]
-\small (b) Live answer (top) and its cited-sources table (bottom).
+\begin{minipage}[t]{0.49\textwidth}\centering
+\includegraphics[width=\linewidth]{assistant.png}\\[1mm]
+\small (b) Live answer to ``Which parts are low on stock?''
 \end{minipage}
-\caption{The running application in sample mode, cropped from full-page screenshots in \code{docs/screenshots/}. The cited part (ID 6, 168\,THB, 12 units) matches the catalog; the tool trace expands below the sources table.}
+\caption{The running application in sample mode (main content area; sidebar omitted). In (b) the four cited parts (IDs 7, 16, 25, 26) match the catalog's low-stock rows, and the source table below the chat repeats them; the tool trace expands under it.}
 \label{fig:screens}
 \end{figure*}
 
