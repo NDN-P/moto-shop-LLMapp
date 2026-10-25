@@ -95,7 +95,7 @@ Next steps are to test independent questions and final answers, add verified fit
 
 ## Hand-in files
 
-See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; recording, proposal, verification and defense guides are in `docs/`. `output/demo/narration-guide.mp3` is an optional narration guide, not a screen recording. Rebuild the PDF with `python scripts/build_report.py` after installing optional `requirements-report.txt` dependencies and supplying both [genuine app screenshots](docs/screenshots/README.md).
+See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; recording, proposal, verification and defense guides are in `docs/`. `output/demo/narration-guide.mp3` is an optional narration guide, not a screen recording. The report source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md).
 
 The course requires a public repository URL, a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.
 

@@ -12,7 +12,7 @@ The repository contains code, setup instructions, 27 invented products, 30 relev
 
 Upload `output/pdf/moto-shop-capstone-report.pdf`. The required length is 4–8 pages.
 
-The report source covers the intended users and problem, architecture diagram and technique choices, page screenshots, labelled evaluation and baselines, measured improvement, live integration observations, failures, and limitations and next steps. It identifies Natdanai Phurintanachot, student ID 67070230. The committed PDF (7 pages) was built on 12 October 2026 with both genuine sample-app screenshots in `docs/screenshots/`. To rebuild it, see the [screenshot instructions](docs/screenshots/README.md); the builder refuses missing images instead of silently omitting them.
+The report source covers the intended users and problem, architecture diagram and technique choices, page screenshots, labelled evaluation and baselines, measured improvement, live integration observations, failures, and limitations and next steps. It identifies Natdanai Phurintanachot, student ID 67070230, School of Information Technology, KMITL. The committed PDF is a 4-page two-column paper built from `report/moto-shop-capstone-report.tex` with `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`, using the genuine sample-app screenshots in `docs/screenshots/`.
 
 ## Q3 - Your recording
 
