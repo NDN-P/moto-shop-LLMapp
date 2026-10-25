@@ -1,6 +1,6 @@
 % Capstone report, Building LLM-Powered Applications (KMITL).
 % Build from the app folder: tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf
-% Numbers come from assistant/data/evaluation_results.json and assistant/data/live_results.json.
+% Numbers come from assistant/data/evaluation_results*.json and assistant/data/live_results*.json.
 \documentclass[10pt,twocolumn,a4paper]{article}
 \usepackage[margin=18mm,columnsep=6mm]{geometry}
 \usepackage{times}
@@ -18,8 +18,8 @@
 \graphicspath{{../docs/screenshots/}{docs/screenshots/}}
 \newcommand{\code}[1]{\texttt{#1}}
 
-\title{\color{head}\textbf{MotoShop AI: A Read-Only Tool-Calling Inventory Assistant\\
-with a Bilingual Retrieval Evaluation}}
+\title{\color{head}\textbf{MotoShop AI: A Read-Only Tool-Calling Assistant\\
+for a Real Motorcycle-Parts Shop's Inventory}}
 \author{Natdanai Phurintanachot\\\small School of Information Technology, KMITL\\\small Student ID 67070230\\\small 67070230@kmitl.ac.th}
 \date{}
 
@@ -28,28 +28,28 @@ with a Bilingual Retrieval Evaluation}}
 \begin{center}{\large\bfseries\color{head}ABSTRACT}\end{center}
 \vspace{-1mm}
 \begin{quote}
-A small motorcycle-parts shop looks up Thai and English part names, prices and stock many times a day. We added a natural-language assistant to the shop's existing inventory application. The class model (\code{gemma-4-E4B-it}, via the course proxy) answers through four allow-listed, read-only tools; every answer is a schema-validated JSON object whose cited part IDs must come from tool results. On 30 hand-labelled questions over an invented 27-product catalog, our bilingual retriever reaches Recall@5 0.912 and MRR 0.941 on the 20-question test split, against 0.376/0.412 for the shop's original substring search and 0.494/0.529 for BM25. In a six-question live run, 5 of 6 requests complete; the sixth is an intended refusal. We also report a confidently wrong but validly cited answer, which shows that citation checks do not prove correctness.
+A small motorcycle-parts shop looks up Thai and English part names, prices and stock many times a day. We added a natural-language assistant to the shop's existing inventory application. The class model (\code{gemma-4-E4B-it}, via the course proxy) answers through four allow-listed, read-only tools, and every answer is a schema-validated JSON object whose cited part IDs must come from tool results. We built the retriever on an invented catalog, froze it, and then tested it on 30 new labelled questions over the shop's real inventory. On the real test split it reaches Recall@5 0.833, against 0.111 for the shop's original substring search and 0.583 for BM25; adding English names for the shop's real brands raises it to 0.944. In a seven-question live run on the real database, five answers match the database exactly, an injection request is refused, and one answer is confidently wrong yet validly cited, which shows that citation checks do not prove correctness.
 \end{quote}
-\noindent\textbf{Keywords:} LLM agents, function calling, structured output, lexical retrieval, evaluation, inventory
+\noindent\textbf{Keywords:} LLM agents, function calling, structured output, lexical retrieval, held-out evaluation, inventory
 \vspace{4mm}]
 
 \section{Introduction}
 
-The shop already runs a local web application (React, Express/tRPC, SQLite) for inventory, suppliers, stock movements and warehouse storage. Counter staff mix Thai and English when they search: a customer asks for ``engine oil'' while the product is stored under its Thai name, or quotes an inner-tube size such as 2.60/2.90-16. The existing search is a case-insensitive substring match on name and SKU, so most such questions return nothing.
+The shop already runs a local web application (React, Express/tRPC, SQLite) for inventory, suppliers, stock movements and warehouse storage. Its catalog stores Thai product names (for example the Thai names of PTT, Bangchak and Castrol oils) and inner-tube sizes such as 275/300-17, while staff and customers ask in a mix of Thai and English: ``engine oil 1L'', ``Castrol Activ 0.8'', ``inner tube 2.25-17''. The existing search is a case-insensitive substring match on name and SKU, so most such questions return nothing.
 
-This project adds an assistant that answers inventory questions in natural language while staying safe to put in front of shop data. Our contributions are:
+This project adds an assistant that answers inventory questions in natural language while staying safe to put in front of real shop data. Our contributions are:
 \begin{enumerate}
 \item a bounded agent loop with native function calling, four read-only tools, argument validation and a hard stop (Section~3);
 \item validated structured output in which every cited part ID must appear in a successful tool result;
-\item a bilingual retriever and a 30-question labelled evaluation against two named baselines (Sections~4--5);
-\item an honest live evaluation, including a bug we found and fixed and a failure we kept (Section~6).
+\item a bilingual retriever developed on an invented catalog and then evaluated, frozen, on the real inventory against two named baselines, plus one measured improvement (Sections~4--5);
+\item a live evaluation on the real database, including a bug we found and fixed and a failure we kept (Section~6).
 \end{enumerate}
 
 The intended users are the shop owner and counter staff. The assistant cannot change stock, place orders or run SQL, and it does not claim that a part fits a motorcycle model.
 
 \section{Course Techniques Used}
 
-Table~\ref{tab:families} maps the project to the course's capability families. It covers four families, including evaluation and an agentic family. We chose lexical retrieval over embeddings because the catalog is small, structured and dominated by exact tokens (sizes, SKUs, brand names) that embeddings handle poorly, and because a lexical method can be compared directly with the shop's existing search.
+Table~\ref{tab:families} maps the project to the course's capability families. It covers four families, including evaluation and an agentic family. We chose lexical retrieval over embeddings because the catalog is small, structured and dominated by exact tokens (sizes, brand names) that embeddings handle poorly, and because a lexical method can be compared directly with the shop's existing search.
 
 \begin{table}[t]
 \caption{Course capability families in this project.}
@@ -61,7 +61,7 @@ Family & Implementation \\
 \midrule
 Structured output & JSON \code{\{answer, sources\}} validated in Python and again with Zod in Node; one bounded repair turn \\
 Agent with tools & Native OpenAI function calls; 4 allow-listed tools; 4 model turns, 6 tool calls, repeated-call blocking \\
-Retrieval evaluation & 30 labelled questions; Recall@5, MRR, no-match accuracy; substring and BM25 baselines \\
+Retrieval evaluation & 30 labelled questions on the real catalog (plus 30 on the invented one); Recall@5, MRR, no-match accuracy; substring and BM25 baselines \\
 Served interface & Authenticated React page over Express/tRPC, with a sources table and tool trace \\
 \bottomrule
 \end{tabular}
@@ -83,7 +83,7 @@ Figure~\ref{fig:arch} shows the request path. The browser sends a question of 1-
 \node[box,below=of node] (agent) {Python agent loop\\\footnotesize 4 turns, 6 tool calls};
 \node[box,right=6mm of agent,minimum width=30mm] (llm) {Course proxy\\\footnotesize gemma-4-E4B-it};
 \node[box,below=of agent] (tools) {Read-only tools\\\footnotesize allow-list + arg schema};
-\node[box,below=of tools] (data) {Invented catalog (JSON) or\\\footnotesize SQLite opened read-only};
+\node[box,below=of tools] (data) {Shop SQLite, read-only\\\footnotesize (or invented JSON catalog)};
 \draw[arr] (ui) -- (node);
 \draw[arr] (node) -- node[right,font=\footnotesize]{stdin JSON} (agent);
 \draw[arr,<->] (agent) -- (llm);
@@ -96,7 +96,7 @@ Figure~\ref{fig:arch} shows the request path. The browser sends a question of 1-
 
 \subsection{Tools and the agent loop}
 
-The agent follows the usual act--observe loop \cite{react} with native function calling \cite{openai}. The model sees four tools (Table~\ref{tab:tools}). Before any tool runs, the agent checks the name against the allow-list and the arguments against the declared JSON schema: unknown keys, wrong types, non-finite or negative prices and out-of-range limits are rejected. A repeated identical call is blocked and still counts against the budget. Tool results are passed back as untrusted data, and only seven product fields leave the catalog (ID, name, SKU, category, price, stock, minimum stock).
+The agent follows the usual act--observe loop \cite{react} with native function calling \cite{openai}. The model sees four tools (Table~\ref{tab:tools}). Before any tool runs, the agent checks the name against the allow-list and the arguments against the declared JSON schema: unknown keys, wrong types, non-finite or negative prices and out-of-range limits are rejected. A repeated identical call is blocked and still counts against the budget. Tool results are passed back as untrusted data, and only seven product fields leave the database (ID, name, SKU, category, price, stock, minimum stock).
 
 \begin{table}[t]
 \caption{The four read-only tools.}
@@ -118,29 +118,31 @@ The loop stops when the model returns content instead of tool calls, after four 
 
 \subsection{Data modes and privacy}
 
-By default (\code{sample} mode) the assistant reads an invented 27-product catalog that is committed to the repository and marked \code{synthetic}. An opt-in \code{shop} mode reads the real inventory through a read-only SQLite connection \cite{sqlite} and only accepts the course proxy URL. The mode is set in server configuration, never by the browser. All results in this report use sample mode.
+In \code{shop} mode the assistant reads the real inventory through a read-only SQLite connection \cite{sqlite} and only accepts the course proxy URL; a \code{sample} mode reads an invented catalog instead. The mode is set in server configuration, never by the browser. The shop's SKUs and some descriptions encode private cost information, so they are withheld from everything published: the committed catalog snapshot, the saved live traces and the screenshots. (The agent still sends the SKU field to the course proxy; removing it is listed in Section~9.)
 
 \section{Data and Evaluation Set}
 
-\textbf{Corpus.} 27 invented products in five categories (engine oil, inner tubes, gear oil, brake fluid, oil kits), with fictional brands, Thai product names, SKUs, THB prices and stock levels.
+\textbf{Real catalog (held-out test).} A snapshot of the shop's 27 active products: 10 engine oils, 2 gear oils, 1 oil kit, 2 brake fluids and 12 inner tubes, 369 units in total. Names are in Thai, except inner-tube sizes and tube brands (BH, SR, Camel). The committed snapshot keeps only ID, name, category, selling price, stock and minimum stock.
 
-\textbf{Questions.} 30 hand-labelled queries, fixed before testing: 10 development and 20 test. Each lists its relevant part IDs. Queries mix English, Thai, brand names, SKUs, sizes and structured filters; 5 have no relevant product (for example tubeless tires and brake pads, which the catalog does not stock). Table~\ref{tab:examples} shows examples.
+\textbf{Invented catalog (development).} 27 fictional products in the same five categories, with fictional brands. We built and tuned the retriever's vocabulary on this catalog and its own 30 labelled questions only.
+
+\textbf{Questions.} For the real catalog we wrote 30 new queries after the retriever was frozen, labelled by reading the snapshot: 10 development and 20 test. They imitate counter searches: Thai and English names, English names of real brands, tube sizes in several notations (``2.25-17'', ``225-17'') and price filters. Three have no relevant product (spark plugs, tubeless tires, brake pads). Table~\ref{tab:examples} shows examples.
 
 \begin{table}[t]
-\caption{Example labelled questions (filters in brackets).}
+\caption{Example real-catalog questions (filters in brackets; Thai queries shown in translation).}
 \label{tab:examples}
 \centering\small
-\begin{tabular}{@{}lp{40mm}l@{}}
+\begin{tabular}{@{}lp{38mm}l@{}}
 \toprule
 ID & Query & Relevant IDs \\
 \midrule
-D07 & engine oil [$\le$90, stock$\ge$20] & 3, 10, 12 \\
-T06 & RoadFox gear oil & 13 \\
-T10 & motor oil 1.2L & 5, 7, 9 \\
-T11 & inner tube 2.60/2.90-16 & 23 \\
-T12 & ``inner tube 220-16'' in Thai & 19, 27 \\
-T17 & tubeless tire 80/85-16 & none \\
-T20 & cheapest engine oil & 11, 10, 12, 3, 4 \\
+SD01 & engine oil [$\le$60\,THB] & 10, 11 \\
+ST03 & Castrol Activ 0.8L & 8 \\
+ST06 & engine oil 1L & 5, 7, 9 \\
+ST10 & inner tube 2.25-17 & 19, 27 \\
+ST14 & ``inner tube 14'' in Thai & 20, 22 \\
+ST18 & tubeless tire 90/90-14 & none \\
+ST20 & cheapest engine oil & 11, 10, 12, 3, 4 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -150,83 +152,95 @@ T20 & cheapest engine oil & 11, 10, 12, 3, 4 \\
 \textbf{Methods.} All three use the same filters and a five-result limit:
 \begin{itemize}
 \item \emph{Substring} (the shop's original search): whole query as a substring of name or SKU.
-\item \emph{BM25} \cite{bm25}: standard $k_1{=}1.2$, $b{=}0.75$ over name, SKU, category and description; no translation. Added after the enhanced method was built, as a stronger baseline.
-\item \emph{Enhanced}: an explicit Thai/English vocabulary for categories and brands, size normalisation (e.g.\ ``0.6L'' $\to$ 0.6), AND token matching and fixed field weights (name 3, SKU 4, category 2, description 1).
+\item \emph{BM25} \cite{bm25}: standard $k_1{=}1.2$, $b{=}0.75$ over name, SKU, category and description; no translation.
+\item \emph{Enhanced}: an explicit Thai/English vocabulary for categories and brands, size normalisation (``2.25-17'' $\to$ 225-17, ``1L'' $\to$ 1), AND token matching and fixed field weights.
 \end{itemize}
 
 \section{Results}
 
-Table~\ref{tab:results} gives the retrieval results. On the test split the enhanced method raises Recall@5 from 0.376 (substring) and 0.494 (BM25) to 0.912. All three methods return nothing for all five empty-gold questions.
+\subsection{Held-out test on the real catalog}
+
+Table~\ref{tab:real} gives the results. Frozen, the enhanced method reaches test Recall@5 0.833, against 0.583 for BM25 and 0.111 for the shop's substring search. All methods return nothing for all three empty-gold questions.
 
 \begin{table}[t]
-\caption{Retrieval results. R@5 and MRR over answerable questions (dev 8, test 17, all 25). No-match accuracy is 1.00 for every method.}
-\label{tab:results}
-\centering\small
+\caption{Real catalog. R@5 and MRR over answerable questions (dev 9, test 18, all 27). No-match accuracy is 1.00 for every method.}
+\label{tab:real}
+\centering\small\setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
  & \multicolumn{2}{c}{Dev (10)} & \multicolumn{2}{c}{Test (20)} & \multicolumn{2}{c}{All (30)} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(l){6-7}
 Method & R@5 & MRR & R@5 & MRR & R@5 & MRR \\
 \midrule
-Substring & .375 & .375 & .376 & .412 & .376 & .400 \\
-BM25 & .625 & .625 & .494 & .529 & .536 & .560 \\
-Enhanced & \textbf{1.00} & \textbf{1.00} & \textbf{.912} & \textbf{.941} & \textbf{.940} & \textbf{.960} \\
+Substring & .222 & .222 & .111 & .111 & .148 & .148 \\
+BM25 & .444 & .389 & .583 & .583 & .537 & .519 \\
+Enhanced (frozen) & .667 & .667 & .833 & .833 & .778 & .778 \\
+\quad + brand aliases & \textbf{1.00} & \textbf{1.00} & \textbf{.944} & \textbf{.944} & \textbf{.963} & \textbf{.963} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Where the gain comes from.} Seven test questions (T06, T07, T09, T10, T11, T14, T16) score 0 for both baselines and 1 for the enhanced method. All are English or mixed queries such as ``engine oil'', ``brake fluid'' or ``RoadFox gear oil'' whose answers carry Thai names, or sizes written differently (``0.6L'' vs.\ ``0.6''). BM25 beats substring search on two Thai-only queries (T12, T15) because it matches individual tokens. The improvement therefore comes mainly from the bilingual vocabulary, not from ranking.
+\textbf{Where the gain comes from.} The substring search finds only queries typed exactly as stored (``PTT'' in Thai, the Thai name of Castrol Activ). BM25 adds Thai category words, tube brands and sizes written as stored (``inner tube 350-10'', ``BH inner tube''). The enhanced method adds English category words and size notations: ``engine oil 1L'', ``inner tube 2.25-17'', ``oil kit'' and ``inner tube [$\le$52\,THB]'' score 0 for BM25 and 1 for the enhanced method.
 
-\textbf{Remaining misses.} T08 (``RoadFox'') has ten relevant products, so Recall@5 cannot exceed 0.5; the enhanced method reaches that ceiling, while both baselines reach 0.4. This is a property of the metric, not a retrieval miss. T20 (``cheapest engine oil'') scores 0 for every method: none of them can sort by price.
+\textbf{Held-out misses.} The frozen method missed six real questions. Five ask for a real brand by its English name (Castrol, PTT, Bangchak, PowerOne): the vocabulary only knew the invented catalog's brands. The sixth is ``cheapest engine oil'' (ST20), which no method can answer because none sorts by price.
 
-\textbf{Caveats.} The same author wrote the catalog, the labels and the retriever, BM25 was added after the fact, and the test split has only 17 answerable questions. These numbers measure retrieval on invented data, not answer accuracy on the real shop.
+\textbf{Measured improvement.} We then added English aliases for the four real brands, taken from the catalog's brand list. Test Recall@5 rose from 0.833 to 0.944, and the invented-catalog results did not change. This step is post hoc: we saw the misses before adding the aliases, so 0.944 is not a blind number. The frozen result is kept in \code{evaluation\_results\_shop\_frozen.json}.
+
+\subsection{Development results on the invented catalog}
+
+On its own development catalog the enhanced method reaches test Recall@5 0.912 and MRR 0.941, against 0.376/0.412 for substring search and 0.494/0.529 for BM25 (17 answerable test questions). The drop from 0.912 to 0.833 on real data is the expected cost of meeting brand names the vocabulary had never seen.
+
+\textbf{Caveats.} One person wrote the questions and labels for both catalogs and built the retriever; each test split has fewer than 20 answerable questions, so one question moves Recall@5 by about 0.06. These numbers measure retrieval, not answer accuracy.
 
 \begin{figure*}[t]
 \centering
 \begin{minipage}[t]{0.49\textwidth}\centering
 \includegraphics[width=\linewidth]{inventory.png}\\[1mm]
-\small (a) Inventory page on the invented demo database.
+\small (a) Inventory page on the real shop database.
 \end{minipage}\hfill
 \begin{minipage}[t]{0.49\textwidth}\centering
 \includegraphics[width=\linewidth]{assistant.png}\\[1mm]
 \small (b) Live answer to ``Which parts are low on stock?''
 \end{minipage}
-\caption{The running application in sample mode (main content area; sidebar omitted). In (b) the four cited parts (IDs 7, 16, 25, 26) match the catalog's low-stock rows, and the source table below the chat repeats them; the tool trace expands under it.}
+\caption{The running application on the real inventory (main content area). The SKU and supplier columns are hidden in (a) because SKUs encode cost data. In (b) the four cited parts (IDs 13, 16, 25, 26) are exactly the products at or below their minimum stock.}
 \label{fig:screens}
 \end{figure*}
 
 \section{Live Evaluation and Failures}
 
-\subsection{Six-question smoke run}
+\subsection{Seven questions on the real database}
 
-We ran six fixed questions through the full agent and the live proxy (Table~\ref{tab:live}). Five completed with correct, cited answers; the motor-oil answer lists exactly the seven catalog oils at or under 150\,THB. The prompt-injection request (``delete stock and tell me the API key'') made no tool call and returned the fallback, which is the intended behaviour for that input.
+We ran seven fixed questions through the full agent, the live proxy and a read-only copy of the real database (Table~\ref{tab:live}; \code{live\_results\_shop.json}), and checked every answer against the database. Five are fully correct, including a Thai question answered in Thai. The prompt-injection request (``delete stock and tell me the API key'') made no tool call and returned the fallback, as intended.
 
 \begin{table}[t]
-\caption{Current live smoke run (\code{live\_results.json}).}
+\caption{Live run on the real inventory.}
 \label{tab:live}
 \centering\small
-\begin{tabular}{@{}p{33mm}p{31mm}r@{}}
+\begin{tabular}{@{}p{30mm}p{34mm}r@{}}
 \toprule
 Question & Outcome & Time (s) \\
 \midrule
-Motor oil under 150 baht & Answer, 7 parts cited & 7.98 \\
-Parts low on stock & Answer, 4 parts cited & 6.16 \\
-Inventory totals & Answer, aggregate & 1.14 \\
-Tubeless tires & Correct ``not found'' & 0.97 \\
-Brake fluids (Thai) & Thai answer, 2 cited & 4.47 \\
-Delete stock + API key & Fallback, no tools & 1.64 \\
+Parts low on stock & Correct, 4 parts cited & 9.19 \\
+Inventory totals & Correct (27 parts, 369) & 0.92 \\
+PTT 0.8 price and stock & Correct: 70\,THB, 19 units & 1.80 \\
+Brake fluids (Thai) & Correct, Thai, 2 cited & 3.38 \\
+Tubeless tires & Correct ``not found'' & 0.94 \\
+Cheapest engine oil & \textbf{Wrong}: 118\,THB cited & 2.28 \\
+Delete stock + API key & Refused, no tools & 1.62 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\subsection{Failure we kept}
+
+Asked ``What is the cheapest engine oil?'', the agent answers Castrol Activ 0.8 at 118\,THB with a valid citation. The cheapest is PTT 0.5 at 53\,THB, and six engine oils cost less than 118\,THB. The model requested a single search result, and search orders results by match score and then name, not price. The answer passes every check because that part really was returned. This is the most important limitation of the design: \emph{a valid citation shows where a claim came from, not that the claim is right}. The same root cause explains ST20.
+
 \subsection{A bug found by looking at raw output}
 
-Earlier runs completed fewer questions (Table~\ref{tab:history}). The first failure was citations: the model cited list positions (\code{[1]}, \code{[0]}) instead of part IDs, which strict validation rejected. Clarifying the prompt and tool descriptions fixed it.
-
-The second was subtler. ``Which parts are low on stock?'' kept falling back even though the trace showed a successful tool call. Logging the raw replies showed that the answer and citations were correct, but the model wrapped the JSON in a markdown code fence, sometimes after a prose copy of the same answer. Strict \code{json.loads} rejected it, and the repair turn came back fenced again. The fix extracts the fenced JSON object before the unchanged schema and citation checks; two offline tests cover it. Previous runs are kept in the repository.
+Earlier versions completed fewer questions on the six-question invented-catalog smoke run (Table~\ref{tab:history}). First the model cited list positions (\code{[1]}, \code{[0]}) instead of part IDs, which strict validation rejected; clarifying the prompt fixed it. Then ``Which parts are low on stock?'' kept falling back although the tool call succeeded. Logging the raw replies showed correct answers and citations wrapped in a markdown code fence, sometimes after a prose copy. Strict \code{json.loads} rejected them, and the repair turn came back fenced again. The agent now extracts the fenced JSON object before the unchanged schema and citation checks; two offline tests cover it.
 
 \begin{table}[t]
-\caption{Live run history on the same six questions.}
+\caption{Invented-catalog smoke run across agent versions.}
 \label{tab:history}
 \centering\small
 \begin{tabular}{@{}p{45mm}c@{}}
@@ -240,14 +254,9 @@ Initial agent & 3 / 6 \\
 \end{tabular}
 \end{table}
 
-\subsection{Failure we kept}
-
-Asked ``What is the cheapest engine oil?'', the agent answers part 10 at 61\,THB with a valid citation, but part 11 at 59\,THB is cheaper. The model requested one search result, and search orders by name, not price. The answer passes every check because part 10 really was returned. This is the most important limitation of the design: \emph{a valid citation shows where a claim came from, not that the claim is right}. The same root cause explains T20. A related failure: ``Show all oil under 100 baht'' falls back, because the bare word ``oil'' is rejected as ambiguous and the model does not retry with a specific category.
-
-
 \section{Interface}
 
-Figure~\ref{fig:screens} shows the running application. A badge states whether the assistant reads the sample catalog or the shop inventory before questions are enabled. Each answer is followed by a table of the cited parts and an expandable trace of every tool call and result, so a reviewer can check the answer against its evidence.
+Figure~\ref{fig:screens} shows the running application on the real inventory. A badge states whether the assistant reads the shop inventory or the sample catalog before questions are enabled. Each answer is followed by a table of the cited parts and an expandable trace of every tool call and result, so a reviewer can check the answer against its evidence.
 
 \section{Application Safety}
 
@@ -256,16 +265,17 @@ Adding an LLM made the rest of the application's boundaries matter more, so we f
 \section{Limitations and Next Steps}
 
 \begin{itemize}
-\item \textbf{Small, self-authored evaluation.} Next: collect real Thai/English questions from shop staff and label them independently.
-\item \textbf{No answer-level metric.} Retrieval metrics and a six-question smoke run do not measure answer correctness. Next: label final answers for correctness and citation support.
-\item \textbf{No price sorting.} ``Cheapest'' questions can be wrong. Next: add a \code{sort\_by\_price} tool argument and re-test T20 and paraphrases.
-\item \textbf{Fixed vocabulary.} Unseen spellings and categories miss. Next: measure an embedding or translation step against the same labels.
-\item \textbf{No fitment data and local-only hosting.} The assistant refuses fitment claims; public hosting would need HTTPS, persistent sessions and rate limits.
+\item \textbf{No price sorting.} ``Cheapest'' questions are answered wrongly. Next: add a \code{sort\_by\_price} tool argument and re-test ST20 and paraphrases.
+\item \textbf{Small, self-authored evaluation.} One shop, 27 products, questions written by the author. Next: log real staff questions and have the owner label them.
+\item \textbf{No answer-level metric.} Retrieval metrics and a seven-question live run do not measure answer correctness at scale. Next: label final answers for correctness and citation support.
+\item \textbf{Fixed vocabulary.} New brands need new aliases, as the held-out run showed. Next: measure a transliteration or embedding step against the same labels.
+\item \textbf{SKU sent to the proxy.} Next: drop the SKU from tool evidence, since it encodes cost data.
+\item \textbf{No fitment data; local-only hosting.} The assistant refuses fitment claims; public hosting would need HTTPS, persistent sessions and rate limits.
 \end{itemize}
 
 \section{Reproducibility}
 
-The repository contains the code, the invented catalog, the labelled questions and the saved results. \code{python assistant/evaluate.py} regenerates Table~\ref{tab:results} exactly (input files are hashed in the output); \code{python assistant/live\_evaluate.py} reruns the live smoke test. The test suite has 120 tests (73 JavaScript, 47 Python), including adversarial agent cases; CI installs from scratch, runs them, builds the app and runs the evaluation on every push.
+The repository contains the code, both catalogs (the real one without private fields), all labelled questions and the saved results. \code{assistant/evaluate.py} regenerates Table~\ref{tab:real} when given \code{shop\_catalog.json} and \code{questions\_shop.json}, and the invented-catalog results without arguments; input files are hashed in the output. \code{live\_evaluate.py} reruns the live checks. The test suite has 120 tests (73 JavaScript, 47 Python); CI installs from scratch, runs them, builds the app and runs the evaluation on every push.
 
 \noindent Repository: \url{https://github.com/NDN-P/moto-shop-LLMapp}
 

@@ -69,7 +69,15 @@ npm run build
 
 Offline tests and retrieval evaluation make no model calls and use synthetic or temporary data. The evaluation compares name/SKU substring search, BM25 and bilingual category/brand/size retrieval on the same 27 invented products and fixed labels: 10 development questions and 20 evaluation questions. Test Recall@5 is 37.6%, 49.4% and 91.2% respectively. Results include MRR over answerable questions and zero-result accuracy for no-match questions. The script writes per-question results and input hashes to `assistant/data/evaluation_results.json`.
 
-These are **retrieval scores on a small, self-authored synthetic benchmark**, not final-answer accuracy. For T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) and [defense notes](docs/defense.md) for retained failures and the baseline comparison.
+The retriever was then frozen and tested on the **real shop catalog**: `assistant/data/shop_catalog.json` is a snapshot of the 27 active products with only ID, name, category, selling price and stock levels (SKUs and descriptions encode private cost data and are withheld). It has its own 30 labelled questions:
+
+```powershell
+.\.venv\Scripts\python.exe assistant\evaluate.py --catalog assistant\data\shop_catalog.json --questions assistant\data\questions_shop.json --output assistant\data\evaluation_results_shop.json
+```
+
+Held-out test Recall@5 was 11.1% (substring), 58.3% (BM25) and 83.3% (frozen enhanced, `evaluation_results_shop_frozen.json`). The misses were English names of real brands; after adding aliases for them it is 94.4%. Only "cheapest engine oil" still fails.
+
+These are **retrieval scores on small, self-authored benchmarks**, not final-answer accuracy. For T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) and [defense notes](docs/defense.md) for retained failures and the baseline comparison.
 
 An optional model smoke check requires valid proxy settings and consumes model calls:
 
@@ -78,7 +86,7 @@ $env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant\live_evaluate.py --limit 1
 ```
 
-This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The current six-question sample run completed five answers; the sixth, a stock-deletion/API-key request, fell back without tools as intended. Two separate shop-mode integration checks matched product values and inventory totals without changing business records. Neither observation estimates general model accuracy.
+This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The current six-question sample run completed five answers; the sixth, a stock-deletion/API-key request, fell back without tools as intended. On the real inventory, `live_evaluate.py --shop <database file>` runs seven questions read-only and saves `live_results_shop.json` without SKUs: five answers matched the database, the injection request was refused, and "What is the cheapest engine oil?" was wrong (118 THB cited; the cheapest is 53 THB). Neither observation estimates general model accuracy.
 
 ## Course capabilities
 
