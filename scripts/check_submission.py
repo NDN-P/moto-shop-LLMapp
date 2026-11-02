@@ -32,7 +32,7 @@ def main():
     assert shop.get("synthetic") is False, "Real shop catalog must be marked synthetic: false"
     assert not any("sku" in part or "description" in part for part in shop["parts"]), "Shop catalog must not publish SKU or description (private cost data)"
     live = subprocess.check_output(["git", "show", ":assistant/data/live_results_shop.json"], cwd=ROOT).decode()
-    assert not re.search(r'"sku"', live, re.I), "Live shop results must not contain SKUs (private cost data)"
+    assert not re.search(r"sku", live, re.I), "Live shop results must not mention SKU anywhere (private cost data)"
     print(f"Public snapshot checked: {len(files)} files; no private files or local credentials found.")
 
 
