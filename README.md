@@ -1,6 +1,6 @@
 # MotoShop AI
 
-A local motorcycle-parts manager with a read-only LLM assistant. React and Express/tRPC serve the shop screens; SQLite stores inventory. Python's `OpenAI` client calls the course proxy with `gemma-4-E4B-it`. The assistant can search parts, look up a product, list low stock and report inventory totals, with source records visible beside each answer.
+A local motorcycle-parts manager with a read-only LLM assistant. React and Express/tRPC serve the shop screens; SQLite stores inventory. Python's `OpenAI` client calls the course proxy with `gemma-4-E4B-it`. The assistant can search parts, look up a product, list low stock and report inventory totals, with source records visible beside each answer. It was evaluated on the owner's real shop inventory (27 products); an invented catalog served as the development set.
 
 ## Quick start on Windows
 
@@ -15,7 +15,7 @@ Install **Node.js 22.12+ with npm** and **Python 3.10+**. Open PowerShell in thi
 
 2. In `.env`, set `ADMIN_USERNAME`, a strong `ADMIN_PASSWORD` and your course `OPENAI_API_KEY`. Keep `OPENAI_BASE_URL=https://llm.nat-d.uk/v1`. Never commit this file or show its contents in a recording.
 
-3. Create the invented demonstration database once, then launch:
+3. To try the app without real data, create the invented demonstration database (the development set) once, then launch. The owner's real inventory uses `ASSISTANT_DATA_MODE=shop` and `DATABASE_URL` in `.env` instead, and is started with `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1`:
 
    ```powershell
    .\.venv\Scripts\python.exe scripts\seed-demo.py
@@ -32,7 +32,7 @@ The seed refuses existing files and `moto-shop.db`. If `demo.db` already exists,
 
 ## Data modes and privacy
 
-The shared configuration defaults to 27 **invented products** in `assistant/data/catalog.json` and the separate demo database. Choose the assistant source in trusted server configuration:
+The shared configuration defaults to the 27 **invented products** in `assistant/data/catalog.json` and the separate demo database, which are the development set. The main evaluation uses the real shop inventory (shop mode). Choose the assistant source in trusted server configuration:
 
 | Mode | Data read by the assistant | Data sent to the course proxy |
 |---|---|---|
@@ -67,26 +67,26 @@ npm run build
 .\.venv\Scripts\python.exe assistant\evaluate.py
 ```
 
-Offline tests and retrieval evaluation make no model calls and use synthetic or temporary data. The evaluation compares name/SKU substring search, BM25 and bilingual category/brand/size retrieval on the same 27 invented products and fixed labels: 10 development questions and 20 evaluation questions. Test Recall@5 is 37.6%, 49.4% and 91.2% respectively. Results include MRR over answerable questions and zero-result accuracy for no-match questions. The script writes per-question results and input hashes to `assistant/data/evaluation_results.json`.
+The suite has 120 tests (73 JavaScript, 47 Python: 43 in `assistant/` and 4 in `scripts/`). Offline tests and retrieval evaluation make no model calls and use synthetic or temporary data. The development evaluation compares name/SKU substring search, BM25 and bilingual category/brand/size retrieval on the 27 invented products and fixed labels: 10 development questions and 20 evaluation questions. Test Recall@5 is 37.6%, 49.4% and 91.2% respectively. Results include MRR over answerable questions and zero-result accuracy for no-match questions. The script writes per-question results and input hashes to `assistant/data/evaluation_results.json`.
 
-The retriever was then frozen and tested on the **real shop catalog**: `assistant/data/shop_catalog.json` is a snapshot of the 27 active products with only ID, name, category, selling price and stock levels (SKUs and descriptions encode private cost data and are withheld). It has its own 30 labelled questions:
+The retriever was then frozen and tested on the **real shop catalog** (the main result): `assistant/data/shop_catalog.json` is a snapshot of the 27 active products (10 engine oils, 2 gear oils, 1 oil kit, 2 brake fluids, 12 inner tubes; 369 units) with only ID, name, category, selling price and stock levels (SKUs and descriptions encode private cost data and are withheld). `assistant/data/questions_shop.json` has 30 labelled questions (10 development, 20 test, 3 with no relevant product):
 
 ```powershell
 .\.venv\Scripts\python.exe assistant\evaluate.py --catalog assistant\data\shop_catalog.json --questions assistant\data\questions_shop.json --output assistant\data\evaluation_results_shop.json
 ```
 
-Held-out test Recall@5 was 11.1% (substring), 58.3% (BM25) and 83.3% (frozen enhanced, `evaluation_results_shop_frozen.json`). The misses were English names of real brands; after adding aliases for them it is 94.4%. Only "cheapest engine oil" still fails.
+Held-out test Recall@5 was 11.1% (substring), 58.3% (BM25) and 83.3% (frozen enhanced, `evaluation_results_shop_frozen.json`; MRR is identical here). The misses were English names of real brands; after adding aliases for them it is 94.4% (`evaluation_results_shop.json`, a post hoc step, not a blind number). Only ST20, "cheapest engine oil", still fails.
 
-These are **retrieval scores on small, self-authored benchmarks**, not final-answer accuracy. For T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) and [defense notes](docs/defense.md) for retained failures and the baseline comparison.
+These are **retrieval scores on small, self-authored benchmarks**, not final-answer accuracy. On the invented set, for T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) and [defense notes](docs/defense.md) for retained failures and the baseline comparison.
 
-An optional model smoke check requires valid proxy settings and consumes model calls:
+An optional model smoke check on the invented catalog requires valid proxy settings and consumes model calls:
 
 ```powershell
 $env:ASSISTANT_DATA_MODE = 'sample'
 .\.venv\Scripts\python.exe assistant\live_evaluate.py --limit 1
 ```
 
-This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The current six-question sample run completed five answers; the sixth, a stock-deletion/API-key request, fell back without tools as intended. On the real inventory, `live_evaluate.py --shop <database file>` runs seven questions read-only and saves `live_results_shop.json` without SKUs: five answers matched the database, the injection request was refused, and "What is the cheapest engine oil?" was wrong (118 THB cited; the cheapest is 53 THB). Neither observation estimates general model accuracy.
+This overwrites `assistant/data/live_results.json`; inspect actual results before reporting them. The current six-question sample run completed five answers (history 3/6, then 4/6 after the citation fix, then 5/6 after the fenced-JSON fix); the sixth, a stock-deletion/API-key request, fell back without tools as intended. On the real inventory, `live_evaluate.py --shop <database file>` runs seven questions read-only and saves `live_results_shop.json` without SKUs: five answers matched the database, the injection request was refused with no tools, and "What is the cheapest engine oil?" was wrong (Castrol Activ 0.8 at 118 THB cited; the cheapest is PTT 0.5 at 53 THB). Neither observation estimates general model accuracy.
 
 ## Course capabilities
 
@@ -97,15 +97,15 @@ This overwrites `assistant/data/live_results.json`; inspect actual results befor
 
 ## Limitations & next steps
 
-The vocabulary is finite; unseen paraphrases and comparative requests such as “cheapest engine oil” can fail. There is no price sorting: “What is the cheapest engine oil?” can return a validly cited but wrong part, and the bare word “oil” is rejected as ambiguous. Each chat question is independent. Source-ID validation checks the cited evidence, not every sentence's correctness. Fitment data is unverified, and slow or unavailable proxy calls can cause errors or a fallback.
+The vocabulary is finite; unseen paraphrases and comparative requests such as “cheapest engine oil” can fail. There is no price sorting: “What is the cheapest engine oil?” returned a validly cited but wrong part on the real inventory, and the bare word “oil” is rejected as ambiguous. Each chat question is independent. Source-ID validation checks the cited evidence, not every sentence's correctness. Fitment data is unverified, and slow or unavailable proxy calls can cause errors or a fallback.
 
-Next steps are to test independent questions and final answers, add verified fitment and comparison handling, and evaluate with shop staff. Sessions currently live in one server process and reset on restart; public hosting would also need HTTPS, request limits and durable sessions.
+The assistant still sends SKUs to the course proxy; dropping them from tool evidence is a listed next step. Next steps are to test independent questions and final answers, add verified fitment and comparison handling, and evaluate with shop staff. Sessions currently live in one server process and reset on restart; public hosting would also need HTTPS, request limits and durable sessions.
 
 ## Hand-in files
 
-See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; recording, proposal, verification and defense guides are in `docs/`. `output/demo/narration-guide.mp3` is an optional narration guide, not a screen recording. The report source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md).
+See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; the recording script, proposal, verification and defense guides are in `docs/`. The report is a 4-page two-column paper; its source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md).
 
-The course requires a public repository URL, a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.
+The course requires a public repository URL (https://github.com/NDN-P/moto-shop-LLMapp, which the owner must make public), a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.
 
 ## Author
 
