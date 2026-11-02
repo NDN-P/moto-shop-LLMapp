@@ -28,6 +28,11 @@ def main():
         assert not re.search(rb"sk-[A-Za-z0-9_-]{16,}", data), f"Possible API credential staged: {name}"
     fixture = json.loads(subprocess.check_output(["git", "show", ":assistant/data/catalog.json"], cwd=ROOT))
     assert fixture.get("synthetic") is True, "Public catalog must be explicitly invented"
+    shop = json.loads(subprocess.check_output(["git", "show", ":assistant/data/shop_catalog.json"], cwd=ROOT))
+    assert shop.get("synthetic") is False, "Real shop catalog must be marked synthetic: false"
+    assert not any("sku" in part or "description" in part for part in shop["parts"]), "Shop catalog must not publish SKU or description (private cost data)"
+    live = subprocess.check_output(["git", "show", ":assistant/data/live_results_shop.json"], cwd=ROOT).decode()
+    assert not re.search(r'"sku"', live, re.I), "Live shop results must not contain SKUs (private cost data)"
     print(f"Public snapshot checked: {len(files)} files; no private files or local credentials found.")
 
 
