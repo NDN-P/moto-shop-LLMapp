@@ -5,7 +5,9 @@ Target length: 3–5 minutes (the course accepts 3–6). Read the quoted speech 
 ## Before recording
 
 - Start with the owner's private `.env` (shop mode, real database): `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1`. Sign in and keep credentials, `.env` and other private windows out of the recording.
-- **The Inventory and Low Stock pages show the SKU and Supplier columns, and SKUs encode private cost data.** Do not show those columns: zoom or crop the browser so they are outside the frame, or stay on the Assistant page. The Assistant's source table shows only ID, name, category, price and stock.
+- **SKUs and part descriptions encode private cost data, and several screens show them.** Inventory has SKU and Supplier columns (SKU hides below 768 px, Supplier below 1024 px, so a browser window narrower than 768 px hides both); Low Stock has a Supplier column but no SKU column. Crop or zoom them out of the frame.
+- **Keep the Assistant's "Lookup details" panel collapsed on camera.** In shop mode it prints the raw tool trace, which includes real SKUs. The sources table above it is safe: it shows only Part ID, Product, Price and Stock. Narrate the trace instead, or show the SKU-stripped file `assistant/data/live_results_shop.json` in an editor.
+- Do not open Inventory's edit (pencil) dialog, which shows the SKU and description fields, or the "All Suppliers" filter, which lists supplier names.
 - The assistant must show the **Shop inventory** badge. In this mode it reads the database without writes and sends the question and selected product fields to the approved course proxy.
 - Do not submit mutations. Do not type private information into the chat.
 - Have a second terminal ready in the app folder with the Python environment. The evaluation needs no model calls.
@@ -18,15 +20,15 @@ Screen: Dashboard, then briefly the navigation.
 
 ## 0:30–1:05 — Existing shop pages
 
-Screen: Dashboard, then Inventory and Low Stock, framed so the SKU and Supplier columns are not visible.
+Screen: Dashboard, then Inventory and Low Stock, framed (for example in a window narrower than 768 px, or cropped) so the SKU and Supplier columns are not visible. Do not open the edit dialog or the supplier filter.
 
 > The dashboard summarizes the shop. Inventory lists product names, categories, prices and quantities, with search and filters. The Low Stock page compares each quantity with its minimum. Suppliers, stock movements and warehouse storage are separate pages. This is the existing application with login. The assistant cannot change stock, place orders or run SQL.
 
 ## 1:05–2:10 — Success case with sources and lookup trace
 
-Screen: Assistant page, **Shop inventory** badge visible. Ask "How much is PTT 0.8 engine oil and how many are in stock?". Wait for completion, then show the sources table and expand the lookup details.
+Screen: Assistant page, **Shop inventory** badge visible. Ask "How much is PTT 0.8 engine oil and how many are in stock?". Wait for completion, then show the sources table. Leave "Lookup details" collapsed (it shows real SKUs); point at its collapsed header while narrating, or cut to `assistant/data/live_results_shop.json` in an editor.
 
-> The badge shows that the assistant reads the shop inventory. I ask how much PTT 0.8 engine oil costs and how many are in stock. The model chooses a native function call, and Python checks the tool name and arguments before running the lookup. The answer is 70 baht with 19 in stock. The sources table shows the cited part with its price and stock, and the lookup details show the actual tool request and result. Every cited part ID must come from a tool result, or the agent returns a fallback.
+> The badge shows that the assistant reads the shop inventory. I ask how much PTT 0.8 engine oil costs and how many are in stock. The model chooses a native function call, and Python checks the tool name and arguments before running the lookup. The answer is 70 baht with 19 in stock. The sources table shows the cited part with its price and stock. Behind it, the lookup details record the actual tool request and result; I keep that panel closed on camera because in shop mode it also prints private part codes, and the saved copy of the run has them removed. Every cited part ID must come from a tool result, or the agent returns a fallback.
 
 ## 2:10–3:00 — Failure case, proven against Inventory
 
@@ -60,13 +62,13 @@ Screen: return to the Assistant page.
 
 Screen: show the actual configuration error, connection error or bounded fallback, with the **Shop inventory** badge visible. Do not show a saved answer as a live result.
 
-> This run shows a connection or response failure, so it does not demonstrate a completed answer. The interface reports the failure instead of inventing a result. The evaluation I show next is deterministic retrieval and does not depend on the model. Earlier live runs on the real inventory completed five of seven questions.
+> This run shows a connection or response failure, so it does not demonstrate a completed answer. The interface reports the failure instead of inventing a result. The evaluation I show next is deterministic retrieval and does not depend on the model. Earlier live runs on the real inventory answered five of seven questions correctly.
 
 Then continue with the evaluation section and describe the exact error if asked; a configuration failure, a proxy error and a bounded model fallback are different outcomes.
 
 ## Questions to practise before the defense
 
 - Explain Recall@5 versus answer accuracy, and why 0.833 (frozen) differs from 0.944 (after aliases).
-- Ask a fresh, complete question, inspect its trace and compare the values with the source records. Questions are independent, so a follow-up such as "what about that one?" has no previous-turn context.
+- Ask a fresh, complete question, inspect its trace and compare the values with the source records (do that privately, not on a recording: the trace shows real SKUs). Questions are independent, so a follow-up such as "what about that one?" has no previous-turn context.
 - Show the retained "cheapest engine oil" failure and explain that search has no price sorting.
 - Say that five of seven live answers is an observed count, not answer accuracy.

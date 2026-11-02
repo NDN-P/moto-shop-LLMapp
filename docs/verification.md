@@ -4,7 +4,7 @@ Aligned with the final report (`report/moto-shop-capstone-report.tex`). This doc
 
 ## Verification status
 
-All 120 local tests passed on 12 October 2026 after adding BM25 and fenced-JSON regression checks, together with TypeScript and the production build. The later real-data work added evaluation files and a live run, described below. Clean-install CI passed for the earlier shop-mode and cleanup source commit.
+All 120 local tests (73 JavaScript, 43 in `assistant/`, 4 in `scripts/`) passed on 2 November 2026, re-run after the last changes to `catalog.py` and `live_evaluate.py`, together with TypeScript and the production build. Clean-install CI passed for the earlier shop-mode and cleanup source commit.
 
 | Check | Observed result | Scope |
 |---|---:|---|
@@ -29,7 +29,7 @@ The shared `.env.example` defaults to `ASSISTANT_DATA_MODE=sample` and `DATABASE
 
 Data mode and database selection come from trusted server configuration, not the browser question payload. The CLI still accepts only `{question}` and rejects a supplied `database_path`. Login remains required. Both modes retain validated read-only tools, four model turns, six tool calls, repeated-call blocking and final citation checks. Offline tests exercise these boundaries; the seven-question live run on the real inventory checks one set of inputs without establishing general accuracy.
 
-Free-text questions are sent to the proxy in both modes. Users must keep credentials, contacts and unrelated private information out of that text. The synthetic marker is a provenance assertion for the supplied fixture, not an automatic detector of sensitive content. No claim is made that arbitrary user-pasted text can be classified perfectly. The course recording uses shop mode on the real data and the **Shop inventory** badge. Real SKUs and part descriptions encode private cost data and must never appear in committed files, screenshots, saved traces or the recording: the Inventory and Low Stock pages show the SKU and Supplier columns, so crop or zoom past them. The assistant still sends SKUs to the course proxy; removing them from tool evidence is a listed next step.
+Free-text questions are sent to the proxy in both modes. Users must keep credentials, contacts and unrelated private information out of that text. The synthetic marker is a provenance assertion for the supplied fixture, not an automatic detector of sensitive content. No claim is made that arbitrary user-pasted text can be classified perfectly. The course recording uses shop mode on the real data and the **Shop inventory** badge. Real SKUs and part descriptions encode private cost data and must never appear in committed files, screenshots, saved traces or the recording: Inventory shows SKU and Supplier columns and Low Stock shows a Supplier column, so crop or zoom past them (a window narrower than 768 px hides both Inventory columns). In shop mode the Assistant's "Lookup details" panel prints the raw tool trace with real SKUs, so it stays collapsed on camera; the sources table (Part ID, Product, Price, Stock) is safe. The assistant still sends SKUs to the course proxy; removing them from tool evidence is a listed next step.
 
 ## Live run on the real inventory
 
