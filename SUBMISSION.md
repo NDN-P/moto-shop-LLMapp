@@ -12,9 +12,9 @@ The repository contains code, setup instructions, both catalogs (the real one wi
 
 ## Q2 - PDF report
 
-Upload `output/pdf/moto-shop-capstone-report.pdf`. It has 4 pages; the required length is 4–8 pages.
+Upload `output/pdf/moto-shop-capstone-report.pdf`. It has 5 pages; the required length is 4–8 pages.
 
-The report source covers the intended users and problem, architecture diagram and technique choices, page screenshots, the labelled held-out real-catalog evaluation and baselines, the measured improvement, live runs on the real database, failures, and limitations and next steps. The committed PDF is a 4-page two-column paper built from `report/moto-shop-capstone-report.tex` with `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`, using the app screenshots in `docs/screenshots/`.
+The report source covers the intended users and problem, architecture diagram and technique choices, page screenshots, the labelled held-out real-catalog evaluation and baselines, the measured improvement, live runs on the real database, failures, and limitations and next steps. The committed PDF is a 5-page two-column paper built from `report/moto-shop-capstone-report.tex` with `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`, using the app screenshots in `docs/screenshots/`.
 
 ## Q3 - Your recording
 

@@ -67,6 +67,13 @@ Served interface & Authenticated React page over Express/tRPC, with a sources ta
 \end{tabular}
 \end{table}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth,trim=0 751 0 699,clip]{inventory.png}
+\caption{Inventory page on the real shop database (first rows). The SKU and supplier columns are hidden because SKUs encode cost data.}
+\label{fig:inventory}
+\end{figure*}
+
 \section{System Design}
 
 \subsection{Architecture}
@@ -194,16 +201,12 @@ On its own development catalog the enhanced method reaches test Recall@5 0.912 a
 
 \begin{figure*}[t]
 \centering
-\begin{minipage}[t]{0.49\textwidth}\centering
-\includegraphics[width=\linewidth]{inventory.png}\\[1mm]
-\small (a) Inventory page on the real shop database.
-\end{minipage}\hfill
-\begin{minipage}[t]{0.49\textwidth}\centering
-\includegraphics[width=\linewidth]{assistant.png}\\[1mm]
-\small (b) Live answer to ``Which parts are low on stock?''
-\end{minipage}
-\caption{The running application on the real inventory (main content area). The SKU and supplier columns are hidden in (a) because SKUs encode cost data. In (b) the four cited parts (IDs 13, 16, 25, 26) are exactly the products at or below their minimum stock.}
-\label{fig:screens}
+\includegraphics[width=0.85\textwidth,trim=0 1180 0 464,clip]{assistant.png}\\[1.5mm]
+\small (a) The question and the generated answer.\\[2mm]
+\includegraphics[width=0.85\textwidth,trim=0 80 0 1607,clip]{assistant.png}\\[1.5mm]
+\small (b) The cited-sources table shown under the answer; the lookup trace expands below it.
+\caption{Live answer to ``Which parts are low on stock?'' on the real inventory (crops of one screenshot). The four cited parts (IDs 13, 16, 25, 26) are exactly the products at or below their minimum stock.}
+\label{fig:assistant}
 \end{figure*}
 
 \section{Live Evaluation and Failures}
@@ -256,7 +259,7 @@ Initial agent & 3 / 6 \\
 
 \section{Interface}
 
-Figure~\ref{fig:screens} shows the running application on the real inventory. A badge states whether the assistant reads the shop inventory or the sample catalog before questions are enabled. Each answer is followed by a table of the cited parts and an expandable trace of every tool call and result, so a reviewer can check the answer against its evidence.
+Figures~\ref{fig:assistant} and~\ref{fig:inventory} show the running application on the real inventory. A badge states whether the assistant reads the shop inventory or the sample catalog before questions are enabled. Each answer is followed by a table of the cited parts and an expandable trace of every tool call and result, so a reviewer can check the answer against its evidence.
 
 \section{Application Safety}
 

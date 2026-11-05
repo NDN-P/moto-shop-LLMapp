@@ -103,7 +103,7 @@ The assistant still sends SKUs to the course proxy; dropping them from tool evid
 
 ## Hand-in files
 
-See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; the recording script, proposal, verification and defense guides are in `docs/`. The report is a 4-page two-column paper; its source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md).
+See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; the recording script, proposal, verification and defense guides are in `docs/`. The report is a 5-page two-column paper; its source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md).
 
 The course requires a public repository URL (https://github.com/NDN-P/moto-shop-LLMapp, which the owner must make public), a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.
 
