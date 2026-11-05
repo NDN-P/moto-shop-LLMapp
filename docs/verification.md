@@ -1,6 +1,6 @@
 # Verification and limitations
 
-Aligned with the final report (`report/moto-shop-capstone-report.tex`). This document distinguishes deterministic tests, retrieval measurements and live model observations. None establishes a guarantee of error-free operation.
+Aligned with the final report (`report/moto-shop-report.tex`). This document distinguishes deterministic tests, retrieval measurements and live model observations. None establishes a guarantee of error-free operation.
 
 ## Verification status
 

@@ -7,4 +7,4 @@ Both images were captured on 25 October 2026 from the production build in shop m
 
 Keep passwords, API keys, SKUs and supplier details out of the images. Do not substitute generated interfaces or a saved answer presented as a live response.
 
-Then run `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf` from the app folder and inspect the resulting PDF before submission.
+Then run `tectonic -X compile report/moto-shop-report.tex --outdir output/pdf` from the app folder and inspect the resulting PDF before submission.

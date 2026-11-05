@@ -103,7 +103,7 @@ The assistant still sends SKUs to the course proxy; dropping them from tool evid
 
 ## Report
 
-The project report is `output/pdf/moto-shop-capstone-report.pdf`, a 5-page two-column paper. Its source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md). The proposal and verification notes are in `docs/`.
+The project report is `output/pdf/moto-shop-report.pdf`, a 5-page two-column paper. Its source is `report/moto-shop-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md). The proposal and verification notes are in `docs/`.
 
 ## Author
 
