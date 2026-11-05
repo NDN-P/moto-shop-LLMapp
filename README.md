@@ -77,7 +77,7 @@ The retriever was then frozen and tested on the **real shop catalog** (the main 
 
 Held-out test Recall@5 was 11.1% (substring), 58.3% (BM25) and 83.3% (frozen enhanced, `evaluation_results_shop_frozen.json`; MRR is identical here). The misses were English names of real brands; after adding aliases for them it is 94.4% (`evaluation_results_shop.json`, a post hoc step, not a blind number). Only ST20, "cheapest engine oil", still fails.
 
-These are **retrieval scores on small, self-authored benchmarks**, not final-answer accuracy. On the invented set, for T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) and [defense notes](docs/defense.md) for retained failures and the baseline comparison.
+These are **retrieval scores on small, self-authored benchmarks**, not final-answer accuracy. On the invented set, for T08, ten products are relevant but only five can be returned, so the maximum Recall@5 is 0.5. See [verification results](docs/verification.md) for retained failures and the baseline comparison.
 
 An optional model smoke check on the invented catalog requires valid proxy settings and consumes model calls:
 
@@ -101,11 +101,9 @@ The vocabulary is finite; unseen paraphrases and comparative requests such as �
 
 The assistant still sends SKUs to the course proxy; dropping them from tool evidence is a listed next step. Next steps are to test independent questions and final answers, add verified fitment and comparison handling, and evaluate with shop staff. Sessions currently live in one server process and reset on restart; public hosting would also need HTTPS, request limits and durable sessions.
 
-## Hand-in files
+## Report
 
-See [SUBMISSION.md](SUBMISSION.md) for the course deliverables. The report is `output/pdf/moto-shop-capstone-report.pdf`; the recording script, proposal, verification and defense guides are in `docs/`. The report is a 5-page two-column paper; its source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md).
-
-The course requires a public repository URL (https://github.com/NDN-P/moto-shop-LLMapp, which the owner must make public), a 4–8 page PDF and a 3–6 minute recorded demonstration or working live URL. Verify repository access and the recording link before submitting.
+The project report is `output/pdf/moto-shop-capstone-report.pdf`, a 5-page two-column paper. Its source is `report/moto-shop-capstone-report.tex`; rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/) using `tectonic -X compile report/moto-shop-capstone-report.tex --outdir output/pdf`. It uses the [app screenshots](docs/screenshots/README.md). The proposal and verification notes are in `docs/`.
 
 ## Author
 
