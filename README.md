@@ -52,7 +52,7 @@ npm run build
 npm start
 ```
 
-With dependencies installed and Node on `PATH`, `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1` starts the development server without npm or a watcher. Add `-Production` to run an existing production build.
+With dependencies installed and Node on `PATH`, `powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1` starts the development server without npm or a watcher. Add `-Production` to run an existing production build. On Windows you can instead double-click `run.bat`, which runs the same launcher with the settings in `.env` and keeps the window open so you can read the printed URL or any error.
 
 The default `HOST=127.0.0.1` accepts connections from this computer. For an iPad on trusted Wi-Fi, set `HOST=0.0.0.0`, restart, allow the selected port through the firewall and open the computer's LAN address. This local app needs deployment hardening before public hosting.
 
